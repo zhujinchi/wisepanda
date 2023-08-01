@@ -130,22 +130,15 @@ class Window(FramelessWindow):
         self.navigationInterface.displayModeChanged.connect(self.titleBar.raise_)
 
     def initNavigation(self):
-        self.addSubInterface(self.searchInterface, FIF.SEARCH, 'Search')
-        # self.addSubInterface(self.musicInterface, FIF.MUSIC, 'Music library')
-        self.addSubInterface(self.videoInterface, FIF.VIDEO, 'Video library')
-
+       
+        self.addSubInterface(self.folderInterface, FIF.FOLDER, '导入文件')
+       
         self.navigationInterface.addSeparator()
 
         # add navigation items to scroll area
-        self.addSubInterface(self.folderInterface, FIF.FOLDER, 'Folder library', NavigationItemPosition.SCROLL)
-        # for i in range(1, 21):
-        #     self.navigationInterface.addItem(
-        #         f'folder{i}',
-        #         FIF.FOLDER,
-        #         f'Folder {i}',
-        #         lambda: print('Folder clicked'),
-        #         position=NavigationItemPosition.SCROLL
-        #     )
+        self.addSubInterface(self.searchInterface, FIF.ALIGNMENT, '竹简列表', NavigationItemPosition.SCROLL)
+        self.addSubInterface(self.videoInterface, FIF.BACK_TO_WINDOW, '匹配区', NavigationItemPosition.SCROLL)
+        self.addSubInterface(self.musicInterface, FIF.DOWNLOAD, '导出', NavigationItemPosition.SCROLL)
 
         # add custom widget to bottom
         self.navigationInterface.addWidget(
