@@ -29,22 +29,34 @@ class FolderInterface(ScrollArea):
         self.settingLabel = QLabel(self.tr("项目文件管理"), self)
      
 
-        # music folders
+        # folders
         self.slipInThisPCGroup = SettingCardGroup(
             self.tr("文件&项目"), self.scrollWidget)
         self.slipFolderCard = FolderListSettingCard(
             cfg.slipFolders,
-            self.tr("文件集合"),
+            self.tr("导入文件"),
             directory=QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation),
             parent=self.slipInThisPCGroup
         )
         self.downloadFolderCard = PushSettingCard(
             self.tr('选择项目'),
-            FIF.DOWNLOAD,
+            FIF.DICTIONARY_ADD,
             self.tr("导入项目"),
             cfg.get(cfg.downloadFolder),
             self.slipInThisPCGroup
-        )        
+        )   
+
+        # models
+        self.modelGroup = SettingCardGroup(
+            self.tr("模型"), self.scrollWidget)    
+        self.addmodelCard = PushSettingCard(
+            self.tr('选择文件'),
+            FIF.ADD,
+            self.tr('导入模型'),
+            cfg.get(cfg.modelFolder),
+            self.modelGroup
+        )
+
         
         self.__initWidget()
 
@@ -72,19 +84,13 @@ class FolderInterface(ScrollArea):
         self.slipInThisPCGroup.addSettingCard(self.slipFolderCard)
         self.slipInThisPCGroup.addSettingCard(self.downloadFolderCard)
 
+        self.modelGroup.addSettingCard(self.addmodelCard)
+
         # add setting card group to layout
         self.expandLayout.setSpacing(28)
         self.expandLayout.setContentsMargins(36, 10, 36, 0)
         self.expandLayout.addWidget(self.slipInThisPCGroup)
-
-    def __showRestartTooltip(self):
-        """ show restart tooltip """
-        InfoBar.success(
-            self.tr('Updated successfully'),
-            self.tr('Configuration takes effect after restart'),
-            duration=1500,
-            parent=self
-        )
+        self.expandLayout.addWidget(self.modelGroup)
 
     def __onDownloadFolderCardClicked(self):
         """ download folder card clicked slot """
@@ -96,9 +102,20 @@ class FolderInterface(ScrollArea):
         cfg.set(cfg.downloadFolder, folder)
         self.downloadFolderCard.setContent(folder)
 
+    def __onAddModelCardClicked(self):
+        """ add model folder card clicked slot """
+        file_dialog = QFileDialog(self)
+        file_dialog.setWindowTitle("Select File")
+        file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        file_dialog.setNameFilter("All Files (*);;Text Files (*.txt)")
+
+        if file_dialog.exec() == QFileDialog.DialogCode.Accepted:
+            file_name = file_dialog.selectedFiles()[0]
+            self.addmodelCard.setContent(file_name)
+
+
     def __connectSignalToSlot(self):
         """ connect signal to slot """
-        cfg.appRestartSig.connect(self.__showRestartTooltip)
         cfg.themeChanged.connect(setTheme)
 
         # music in the pc
@@ -106,3 +123,6 @@ class FolderInterface(ScrollArea):
             self.slipFoldersChanged)
         self.downloadFolderCard.clicked.connect(
             self.__onDownloadFolderCardClicked)
+        self.addmodelCard.clicked.connect(
+            self.__onAddModelCardClicked
+        )
