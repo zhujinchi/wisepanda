@@ -16,7 +16,6 @@ from ..common.style_sheet import StyleSheet
 class FolderInterface(ScrollArea):
     """ Folder interface """
 
-    checkUpdateSig = pyqtSignal()
     slipFoldersChanged = pyqtSignal(list)
 
     def __init__(self, parent=None):
@@ -126,3 +125,5 @@ class FolderInterface(ScrollArea):
         self.addmodelCard.clicked.connect(
             self.__onAddModelCardClicked
         )
+
+

@@ -11,7 +11,7 @@ class StyleSheet(StyleSheetBase, Enum):
     SAMPLE_CARD = "sample_card"
 
     FOLDER_INTERFACE = "folder_interface"
-    LIST_INTERFACE = "list_interface"
+    ICON_INTERFACE = "list_interface"
     MATCH_INTERFACE = "match_interface"
     OUTPUT_INTERFACE = "output_interface"
     SETTING_INTERFACE = "setting_interface"
