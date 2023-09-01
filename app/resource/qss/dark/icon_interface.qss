@@ -52,4 +52,3 @@ IconInfoPanel>QLabel {
     font: 12px 'Segoe UI', 'PingFang SC';
     color: rgb(207, 207, 207);
 }
-

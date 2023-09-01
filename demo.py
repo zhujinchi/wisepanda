@@ -17,20 +17,21 @@ if cfg.get(cfg.dpiScale) != "Auto":
     os.environ["QT_SCALE_FACTOR"] = str(cfg.get(cfg.dpiScale))
 
 # create application
-app = QApplication(sys.argv)
-app.setAttribute(Qt.ApplicationAttribute.AA_DontCreateNativeWidgetSiblings)
 
 # internationalization
 locale = cfg.get(cfg.language).value
-translator = FluentTranslator(locale)
+# translator = FluentTranslator(locale)
 galleryTranslator = QTranslator()
 galleryTranslator.load(locale, "gallery", ".", ":/gallery/i18n")
 
-app.installTranslator(translator)
-app.installTranslator(galleryTranslator)
+# app.installTranslator(translator)
 
 # create main window
-w = MainWindow()
-w.show()
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    app.setAttribute(Qt.ApplicationAttribute.AA_DontCreateNativeWidgetSiblings)
+    app.installTranslator(galleryTranslator)
+    w = MainWindow()
+    w.show()
 
-app.exec()
+    sys.exit(app.exec())

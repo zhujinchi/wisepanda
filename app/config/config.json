@@ -6,11 +6,9 @@
         "CheckUpdateAtStartUp": true
     },
     "Folders": {
-        "Download": "/Users/angzeng/Desktop",
-        "Model": "/Users/angzeng/GitHub/Fratcher/app",
-        "Slips": [
-            "/Users/angzeng/Documents/TencentMeeting"
-        ]
+        "Download": "/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data",
+        "Model": "/Users/angzeng/Downloads/Fratcher/D:/Users/angzeng/GitHub/Fratcher/app",
+        "Slips": []
     },
     "MainWindow": {
         "DpiScale": "Auto",
