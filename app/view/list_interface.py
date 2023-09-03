@@ -24,7 +24,7 @@ class ListInterface(GalleryInterface):
         )
         self.setObjectName('iconInterface')
 
-        self.iconView = IconCardView(self)
+        self.iconView = testWidget(self)
         
         self.vBoxLayout.addWidget(self.iconView)
 

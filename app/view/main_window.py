@@ -64,8 +64,9 @@ class MainWindow(FluentWindow):
             self.settingInterface, FIF.SETTING, t.setting, NavigationItemPosition.BOTTOM)
 
     def initWindow(self):
-        self.resize(960, 780)
-        self.setMinimumWidth(760)
+        self.resize(1460, 980)
+        self.setMinimumWidth(960)
+        self.setMinimumHeight(760)
         self.setWindowIcon(QIcon('app/resource/images/logo.png'))
         self.setWindowTitle('Fragment Matcher')
 
