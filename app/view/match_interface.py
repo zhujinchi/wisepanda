@@ -1,9 +1,9 @@
 # coding:utf-8
 import sys
-from PyQt6.QtCore import Qt, QPoint, QCoreApplication
+from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve
 from PyQt6.QtWidgets import QScrollArea, QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QWidget, QSlider, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy, QFrame, QGraphicsOpacityEffect
 from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor
-from qfluentwidgets import SmoothScrollArea, ScrollArea, HollowHandleStyle, Slider, setTheme, Theme, PushButton, BodyLabel, IconWidget, TextWrap, FlowLayout
+from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectionScrollArea, SmoothScrollArea, ScrollArea, HollowHandleStyle, Slider, setTheme, Theme, PushButton, BodyLabel, IconWidget, TextWrap, FlowLayout
 
 
 from .gallery_interface import GalleryInterface 
@@ -42,12 +42,12 @@ class ImageWidget(QWidget):
         self.top_widget = QWidget(self)
         self.top_layout = QVBoxLayout(self.top_widget)
         self.top_widget.setStyleSheet("background-color: rgb(50, 50, 50); border: 0.3px solid rgb(29, 29, 29); border-radius: 5px;")
-        self.top_widget.setMinimumHeight(180)
+        self.top_widget.setFixedHeight(140)
 
         # 在 self.top_widget 上创建一个横向滚动的页面
-        scroll_area = SmoothScrollArea(self.top_widget)
+        scroll_area = SingleDirectionScrollArea(self.top_widget, Qt.Orientation.Horizontal)
         scroll_area.setWidgetResizable(True)  # 使滚动区域的内容自适应大小
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)  # 显示水平滚动条
+        # scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)  # 显示水平滚动条
 
         # 创建一个容器 widget，作为滚动内容的容器
         scroll_content = QWidget()
@@ -60,12 +60,12 @@ class ImageWidget(QWidget):
         # 创建 widget
         self.image_list = ['/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data/0_1.png', '/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data/0_1.png']
 
-
-
         # 添加一系列的子 widget
-        for i in range(len(self.image_list)):
-            child_widget = CustomButton(self.image_list[i], "Button Name", {i})
+        for i in range(50):
+            child_widget =  SampleCard(self.image_list[1], 'score: 10.56', i, self)
+            child_widget.clicked.connect(lambda: self.chooseImage2(self.image_list[1]))
             layout.addWidget(child_widget)
+        
 
         # 设置容器 widget 的布局
         scroll_content.setLayout(layout)
@@ -79,14 +79,14 @@ class ImageWidget(QWidget):
         self.bottom_widget = QWidget(self)
         self.bottom_layout = QHBoxLayout(self.bottom_widget)
         self.bottom_widget.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29); border-radius: 5px;")
-        self.bottom_widget.setMinimumHeight(690) 
+        self.bottom_widget.setMinimumHeight(655) 
        
 
         # 下半区 控制区
         self.control_widget = QWidget(self.bottom_widget) # 左区 控制区
         self.control_widget.setStyleSheet("background-color: rgb(36, 36, 36); border: 0.4px solid rgb(36, 36, 36);border-radius: 5px;")  # 设置背景颜色
         self.control_widget.setFixedWidth(240)  # 设置固定宽度
-        self.control_widget.setMinimumHeight(670)
+        self.control_widget.setMinimumHeight(630)
         # self.control_widget.setMaximumHeight(680)
 
         # 下半区 图片区
@@ -219,23 +219,23 @@ class ImageWidget(QWidget):
         self.control_layout.addWidget(BodyLabel('导入图片一'))
         self.control_layout.addWidget(self.load_button1, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addWidget(BodyLabel('图片一透明度'))
-        self.control_layout.addSpacing(10)
+        self.control_layout.addSpacing(5)
         self.control_layout.addWidget(self.slider1, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addSpacing(10)
         self.control_layout.addWidget(BodyLabel('图片一缩放'))
         self.control_layout.addWidget(self.zoom_widget1, 0, Qt.AlignmentFlag.AlignHCenter)
-        self.control_layout.addSpacing(10)
+        self.control_layout.addSpacing(5)
         self.control_layout.addWidget(self.line1_widget)
-        self.control_layout.addSpacing(20)
+        self.control_layout.addSpacing(10)
         self.control_layout.addWidget(BodyLabel('导入图片二'))
         self.control_layout.addWidget(self.load_button2, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addWidget(BodyLabel('图片二透明度'))
-        self.control_layout.addSpacing(10)
+        self.control_layout.addSpacing(5)
         self.control_layout.addWidget(self.slider2, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addSpacing(10)
         self.control_layout.addWidget(BodyLabel('图片二缩放'))
         self.control_layout.addWidget(self.zoom_widget2, 0, Qt.AlignmentFlag.AlignHCenter)
-        self.control_layout.addSpacing(10)
+        self.control_layout.addSpacing(5)
         self.control_layout.addWidget(self.line2_widget)
         self.control_layout.addWidget(self.output_button, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addStretch(1)
@@ -259,6 +259,32 @@ class ImageWidget(QWidget):
                 self.original_pixmap1 = QPixmap(file_name)  # 存储原始加载的图片
                 self.image_label1.setPixmap(self.original_pixmap1)
                 self.image_label1.setFixedSize(self.original_pixmap1.size())  # 设置image_label1的大小与图片大小一致
+                InfoBar.success(
+                title='提示消息',
+                content="图片1加载成功。",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM_RIGHT,
+                duration=3000,    # won't disappear automatically
+                parent=self
+            )
+
+    def chooseImage2(self, file_name):
+            print(file_name)
+            if file_name:
+                self.original_pixmap2 = QPixmap(file_name)  # 存储原始加载的图片
+                self.image_label2.setPixmap(self.original_pixmap2)
+                self.image_label2.setFixedSize(self.original_pixmap2.size())  # 设置image_label1的大小与图片大小一致
+                InfoBar.success(
+                title='提示消息',
+                content="图片2加载成功。",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM_RIGHT,
+                duration=3000,    # won't disappear automatically
+                parent=self
+            )
+
 
     # 图片2加载方法
     def loadImage2(self):
@@ -268,7 +294,16 @@ class ImageWidget(QWidget):
                 self.original_pixmap2 = QPixmap(file_name)  # 存储原始加载的图片
                 self.image_label2.setPixmap(self.original_pixmap2)
                 self.image_label2.setFixedSize(self.original_pixmap2.size())  # 设置image_label1的大小与图片大小一致
-
+                InfoBar.success(
+                title='提示消息',
+                content="图片2加载成功。",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM_RIGHT,
+                duration=3000,    # won't disappear automatically
+                parent=self
+            )
+                
     # 图片1透明度方法
     def setOpacity1(self, value):
         opacity = value / 100.0  # 将 slider1 的值映射到透明度范围 0.0 - 1.0
@@ -371,20 +406,25 @@ class ImageWidget(QWidget):
 class SampleCard(QFrame):
     """ Sample card """
 
-    def __init__(self, icon, title, content, index, parent=None):
+    clicked = pyqtSignal()  # 创建一个点击信号
+
+    def __init__(self, icon, content, index, parent=None):
         super().__init__(parent=parent)
+
         self.index = index
-        self.title = title
+        self.title = f"rank: {index}"
+        self.icon = icon
 
         self.iconWidget = IconWidget(icon, self)
-        self.titleLabel = QLabel(title, self)
+        self.titleLabel = QLabel(self.title, self)
         self.contentLabel = QLabel(TextWrap.wrap(content, 45, False)[0], self)
 
         self.hBoxLayout = QHBoxLayout(self)
         self.vBoxLayout = QVBoxLayout()
 
-        self.setFixedSize(360, 90)
+        self.setFixedSize(200, 90)
         self.iconWidget.setFixedSize(48, 48)
+
 
         self.hBoxLayout.setSpacing(28)
         self.hBoxLayout.setContentsMargins(20, 0, 0, 0)
@@ -402,7 +442,8 @@ class SampleCard(QFrame):
 
         self.titleLabel.setObjectName('titleLabel')
         self.contentLabel.setObjectName('contentLabel')
+        self.setStyleSheet("background-color: rgb(36, 36, 36); border: 0.4px solid rgb(29, 29, 29);")
 
     def mouseReleaseEvent(self, e):
         super().mouseReleaseEvent(e)
-        print(self.title)
+        self.clicked.emit()
