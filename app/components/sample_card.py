@@ -68,6 +68,31 @@ class SampleCardView(QWidget):
 
         self.titleLabel.setObjectName('viewTitleLabel')
         StyleSheet.SAMPLE_CARD.apply(self)
+        self.setStyleSheet("background-color: rgb(36, 36, 36); border: 0.4px solid rgb(29, 29, 29); border-radius: 5px;")
+
+    def addSampleCard(self, icon, title, content, routeKey, index):
+        """ add sample card """
+        card = SampleCard(icon, title, content, routeKey, index, self)
+        self.flowLayout.addWidget(card)
+
+class SampleNoTitleCardView(QWidget):
+    """ Sample card view """
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.vBoxLayout = QVBoxLayout(self)
+        self.flowLayout = FlowLayout()
+
+        self.vBoxLayout.setContentsMargins(36, 0, 36, 0)
+        self.vBoxLayout.setSpacing(10)
+        self.flowLayout.setContentsMargins(0, 0, 0, 0)
+        self.flowLayout.setHorizontalSpacing(12)
+        self.flowLayout.setVerticalSpacing(12)
+
+        self.vBoxLayout.addLayout(self.flowLayout, 1)
+
+        StyleSheet.SAMPLE_CARD.apply(self)
+        self.setStyleSheet("background-color: rgb(36, 36, 36); border: 0.4px solid rgb(29, 29, 29); border-radius: 5px;")
 
     def addSampleCard(self, icon, title, content, routeKey, index):
         """ add sample card """

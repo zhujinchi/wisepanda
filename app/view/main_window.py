@@ -6,6 +6,8 @@ from PyQt6.QtWidgets import QApplication, QHBoxLayout, QFrame, QWidget
 from qfluentwidgets import NavigationAvatarWidget, NavigationItemPosition, MessageBox, FluentWindow, SplashScreen
 from qfluentwidgets import FluentIcon as FIF
 
+from app.view.gallery_interface import GalleryInterface
+
 from .folder_interface import FolderInterface
 from .list_interface import ListInterface
 from .match_interface import MatchInterface
