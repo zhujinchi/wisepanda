@@ -6,9 +6,13 @@
         "CheckUpdateAtStartUp": true
     },
     "Folders": {
-        "Download": "/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data",
+        "Download": "/Users/angzeng/Documents/缀合网络相关/trainval",
         "Model": "/Users/angzeng/Downloads/Fratcher/D:/Users/angzeng/GitHub/Fratcher/app",
-        "Slips": []
+        "Slips": [
+            "/Users/angzeng/Documents/缀合网络相关/trainval",
+            "/Users/angzeng/Documents/Apifox",
+            "/Users/angzeng/Documents/USYD"
+        ]
     },
     "MainWindow": {
         "DpiScale": "Auto",

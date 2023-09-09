@@ -56,9 +56,8 @@ class ImageWidget(QWidget):
         # 创建一个水平布局来容纳子 widget
         layout = QHBoxLayout(scroll_content)
 
-
         # 创建 widget
-        self.image_list = ['/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data/0_1.png', '/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data/0_1.png']
+        self.image_list = ['/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data/0_1.png', '/Users/angzeng/Documents/缀合网络相关/trainval/107/240-05-01.png']
 
         # 添加一系列的子 widget
         for i in range(50):
@@ -66,14 +65,11 @@ class ImageWidget(QWidget):
             child_widget.clicked.connect(lambda: self.chooseImage2(self.image_list[1]))
             layout.addWidget(child_widget)
         
-
         # 设置容器 widget 的布局
         scroll_content.setLayout(layout)
 
         # 添加滚动区域到 self.top_layout 中
         self.top_layout.addWidget(scroll_area)
-
-
 
         # 下半区
         self.bottom_widget = QWidget(self)
@@ -81,7 +77,6 @@ class ImageWidget(QWidget):
         self.bottom_widget.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29); border-radius: 5px;")
         self.bottom_widget.setMinimumHeight(655) 
        
-
         # 下半区 控制区
         self.control_widget = QWidget(self.bottom_widget) # 左区 控制区
         self.control_widget.setStyleSheet("background-color: rgb(36, 36, 36); border: 0.4px solid rgb(36, 36, 36);border-radius: 5px;")  # 设置背景颜色
@@ -138,7 +133,6 @@ class ImageWidget(QWidget):
         self.images_widget.setLayout(self.images_layout)
 
         
-
         # 控制区组件群
         self.control_layout = QVBoxLayout(self.control_widget)
        
@@ -203,7 +197,7 @@ class ImageWidget(QWidget):
         # 导出按钮
         self.output_button = PushButton('匹配确定', self.control_widget)
         self.output_button.setFixedWidth(180)
-
+        self.output_button.clicked.connect(self.outputList)
 
         # 创建分隔线
         self.line1_widget = QWidget(self)
@@ -304,6 +298,18 @@ class ImageWidget(QWidget):
                 parent=self
             )
                 
+    # 图片2加载方法
+    def outputList(self):
+            InfoBar.success(
+            title='提示消息',
+            content="匹配项置入导出列表。",
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.BOTTOM_RIGHT,
+            duration=3000,    # won't disappear automatically
+            parent=self
+        )
+        
     # 图片1透明度方法
     def setOpacity1(self, value):
         opacity = value / 100.0  # 将 slider1 的值映射到透明度范围 0.0 - 1.0

@@ -24,7 +24,7 @@ class ListInterface(GalleryInterface):
         )
         self.setObjectName('iconInterface')
 
-        self.iconView = testWidget(self)
+        self.iconView = IconCardView(self)
         
         self.vBoxLayout.addWidget(self.iconView)
 
@@ -45,9 +45,6 @@ class IconCardView(QWidget):
         super().__init__(parent=parent)
         self.trie = Trie()
         self.iconLibraryLabel = StrongBodyLabel(self.tr('搜索'), self)
-        self.search_load_group = QGroupBox(self)
-        self.group_layout = QHBoxLayout(self.search_load_group)
-        self.load_button = QPushButton(self.tr("刷新"), self.search_load_group)
         self.searchLineEdit = SearchLineEdit(self)
 
         self.view = QFrame(self)
@@ -66,26 +63,20 @@ class IconCardView(QWidget):
         self.__initWidget()
 
     def __initWidget(self):
-        # self.scrollArea.setWidget(self.scrollWidget)
+        self.scrollArea.setWidget(self.scrollWidget)
         self.scrollArea.setViewportMargins(0, 5, 0, 5)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        self.group_layout.setSpacing(0)
-        self.group_layout.setContentsMargins(0, 0, 0, 0)
-        self.search_load_group.setLayout(self.group_layout)
-        self.group_layout.addWidget(self.searchLineEdit, 0, Qt.AlignmentFlag.AlignLeft)
-        self.group_layout.addWidget(self.load_button)
-
         self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.vBoxLayout.setSpacing(12)
         self.vBoxLayout.addWidget(self.iconLibraryLabel)
-        self.vBoxLayout.addWidget(self.search_load_group)
+        self.vBoxLayout.addWidget(self.searchLineEdit)
         self.vBoxLayout.addWidget(self.view)
 
         self.hBoxLayout.setSpacing(0)
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.hBoxLayout.addWidget(self.scrollWidget, Qt.AlignmentFlag.AlignLeft)
+        self.hBoxLayout.addWidget(self.scrollWidget)
         self.hBoxLayout.addWidget(self.infoPanel, Qt.AlignmentFlag.AlignRight)
 
         self.flowLayout.setVerticalSpacing(8)
@@ -93,7 +84,6 @@ class IconCardView(QWidget):
         self.flowLayout.setContentsMargins(8, 3, 8, 8)
 
         # initialize style sheet
-        self.search_load_group.setObjectName('search_load_group')
         self.view.setObjectName('preview')
         self.scrollWidget.setObjectName('scrollWidget')
         StyleSheet.LIST_INTERFACE.apply(self)
@@ -113,10 +103,6 @@ class IconCardView(QWidget):
         self.searchLineEdit.setFixedWidth(720)
         # self.view.move(36, 130)
 
-        # need to be changed to be adaptive
-        self.load_button.setFixedWidth(120)
-        self.load_button.setFixedHeight(35)
-
         self.hBoxLayout.setSpacing(0)
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.hBoxLayout.addWidget(self.scrollArea)
@@ -128,7 +114,6 @@ class IconCardView(QWidget):
     def __connectSignalToSlot(self):
         self.searchLineEdit.clearSignal.connect(self.showAllImgs)
         self.searchLineEdit.searchSignal.connect(self.search)
-        self.load_button.clicked.connect(self.updateImgList)
 
     def search(self, keyWord: str):
         """ search icons """
