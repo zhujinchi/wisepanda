@@ -50,7 +50,7 @@ class IconCardView(QWidget):
         self.view = QFrame(self)
         self.scrollArea = SmoothScrollArea(self.view)
         self.scrollWidget = QWidget(self.scrollArea)
-        self.infoPanel = IconInfoPanel(FluentIcon.MENU, self)
+        self.infoPanel = IconInfoPanel(FluentIcon.ACCEPT, self)
 
         self.vBoxLayout = QVBoxLayout(self)
         self.hBoxLayout = QHBoxLayout(self.view)
@@ -77,7 +77,7 @@ class IconCardView(QWidget):
         self.hBoxLayout.setSpacing(0)
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.hBoxLayout.addWidget(self.scrollWidget)
-        self.hBoxLayout.addWidget(self.infoPanel, Qt.AlignmentFlag.AlignRight)
+        self.hBoxLayout.addWidget(self.infoPanel)
 
         self.flowLayout.setVerticalSpacing(8)
         self.flowLayout.setHorizontalSpacing(8)

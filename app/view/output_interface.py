@@ -1,7 +1,9 @@
 # coding:utf-8
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QFrame, QTreeWidgetItem, QHBoxLayout, QTreeWidgetItemIterator, QTableWidgetItem, QListWidgetItem, QWidget, QVBoxLayout, QHBoxLayout
+from PyQt6.QtCore import Qt, QFile, QTextStream, pyqtSignal
+from PyQt6.QtWidgets import QFrame, QTreeWidgetItem, QHBoxLayout, QTreeWidgetItemIterator, QTableWidgetItem, QListWidgetItem, QWidget, QVBoxLayout, QHBoxLayout, QFileDialog
 from qfluentwidgets import TreeWidget, TableWidget, ListWidget, PushButton, InfoBar, InfoBarIcon, InfoBarPosition
+
+from openpyxl import Workbook
 
 from .gallery_interface import GalleryInterface
 
@@ -15,11 +17,12 @@ class OutputInterface(GalleryInterface):
         )
         self.setObjectName('outputInterface')
 
-        self.mainView = testWidget(self)
+        self.mainView = tableView(self)
         
         self.vBoxLayout.addWidget(self.mainView)
 
-class testWidget(QWidget):
+class tableView(QWidget):
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         
@@ -33,7 +36,6 @@ class testWidget(QWidget):
         self.mainWidget.setFixedHeight(800)
         self.mainWidget.setStyleSheet("background-color: rgb(32, 32, 32); border: 0.4px solid rgb(29, 29, 29); border-radius: 5px;")
         
-        
         # 构建表格
         self.table_layout = QVBoxLayout()
         self.tableWidget = TableFrame(self)
@@ -41,25 +43,13 @@ class testWidget(QWidget):
         
         self.mainWidget.setLayout(self.table_layout)
 
-        self.download_button = PushButton('列表下载', self.mainWidget)
+        self.download_button = PushButton('列表下载(.xlsx)', self.mainWidget)
         self.download_button.setFixedWidth(180)
-        self.download_button.clicked.connect(self.downloadList) # 文本下载本地按钮连接事件
+        self.download_button.clicked.connect(self.tableWidget.__save_file__) # 文本下载本地按钮连接事件
         self.table_layout.addWidget(self.download_button)
         
         self.layout.addWidget(self.mainWidget)
         self.setLayout(self.layout)
-
-    # 文本下载到本地方法
-    def downloadList(self):
-            InfoBar.success(
-            title='提示消息',
-            content="匹配列表导出到本地。",
-            orient=Qt.Orientation.Horizontal,
-            isClosable=True,
-            position=InfoBarPosition.BOTTOM_RIGHT,
-            duration=3000,    # won't disappear automatically
-            parent=self
-        )
 
 class Frame(QFrame):
 
@@ -81,26 +71,61 @@ class TableFrame(Frame):
         self.table = TableWidget(self)
         self.addWidget(self.table)
 
-        songInfos = [
-            ['1      ', '219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['2      ', '219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['3', '219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['4', '219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['5', '219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['6', '219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
+        self.slipMatchList = [
+            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
+            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
+            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
+            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
+            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
+            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
         ]
 
-        self.table.verticalHeader().hide()
-        self.table.setColumnCount(6)
-        self.table.setRowCount(len(songInfos))
+        self.table.verticalHeader().show()
+        self.table.setColumnCount(5)
+        self.table.setRowCount(len(self.slipMatchList))
         self.table.setHorizontalHeaderLabels([
-            self.tr('ID'), self.tr('图片一'), self.tr('图片二'),
+            self.tr('图片一'), self.tr('图片二'),
             self.tr('图片一路径'), self.tr('图片二路径'), self.tr('置入时间')
         ])
         
-        for i, songInfo in enumerate(songInfos):
-            for j in range(6):
+        for i, songInfo in enumerate(self.slipMatchList):
+            for j in range(5):
                 self.table.setItem(i, j, QTableWidgetItem(songInfo[j]))
 
         # self.setFixedSize(800, 440)
         self.table.resizeColumnsToContents()
+    
+    def __save_file__(self):
+        # 打开文件对话框，让用户选择保存的地址和文件名
+        file_dialog = QFileDialog()
+        file_dialog.setFileMode(QFileDialog.FileMode.AnyFile)
+        file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        file_dialog.setDefaultSuffix("xlsx")
+
+        if file_dialog.exec():
+            file_name = file_dialog.selectedFiles()[0]
+
+            # 创建一个新的Excel工作簿
+            workbook = Workbook()
+            sheet = workbook.active
+
+            # 这里假设要保存的数据是一个二维列表
+            data_to_save = self.slipMatchList
+
+            # 将数据写入Excel工作表
+            for row_data in data_to_save:
+                sheet.append(row_data)
+
+            # 保存Excel文件
+            workbook.save(file_name)
+
+            # 打印成功保存的消息
+            InfoBar.success(
+            title='提示消息',
+            content="匹配列表导出到本地。",
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.BOTTOM_RIGHT,
+            duration=3000,    # won't disappear automatically
+            parent=self
+        )
