@@ -60,14 +60,6 @@ class IconCardView(QWidget):
 
         self.__initWidget()
     
-    def dir_changed(self, value):
-        print(value)
-        # self.dirs = []
-        # if self.getImgList(value) != []:
-        #     for img in self.getImgList():
-        #         self.addImg(img)
-        #     self.setSelectedImg(self.dirs[0])
-
     def __initWidget(self):
         self.updateImgList()
 
@@ -130,6 +122,20 @@ class IconCardView(QWidget):
             card.setVisible(True)
         self.flowLayout.update()
         self.setSelectedImg(results[0].dir)
+
+
+
+    def dir_changed(self, value):
+        self.dirs = []
+        self.cards = []
+        self.flowLayout.takeAllWidgets()
+        if self.getImgList(value) != []:
+            for img in self.getImgList(value):
+                self.addImg(img)
+            self.setSelectedImg(self.dirs[0])
+        self.flowLayout.update()
+
+
 
     def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext='png'):
         fileList = []

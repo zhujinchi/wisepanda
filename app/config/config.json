@@ -6,13 +6,9 @@
         "CheckUpdateAtStartUp": true
     },
     "Folders": {
-        "Download": "/Users/angzeng/GitHub/Defragment-Neural-Network/data/real_lines",
-        "Model": "/Users/angzeng/Downloads/Fratcher/D:/Users/angzeng/GitHub/Fratcher/app",
-        "Slips": [
-            "/Users/angzeng/Documents/缀合网络相关/trainval",
-            "/Users/angzeng/Documents/Apifox",
-            "/Users/angzeng/Documents/USYD"
-        ]
+        "Download": "C:/Users/zhuji/Pictures/Saved Pictures/data/real_lines",
+        "Model": "D:/Github/Fratcher/app/model",
+        "Slips": []
     },
     "MainWindow": {
         "DpiScale": "Auto",
