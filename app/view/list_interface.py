@@ -1,5 +1,7 @@
 # coding:utf-8
 import os
+import re
+import cv2
 from functools import singledispatchmethod
 from typing import List, Union
 
@@ -12,6 +14,8 @@ from .gallery_interface import GalleryInterface
 from ..common.config import cfg
 from ..common.trie import Trie
 from ..common.style_sheet import StyleSheet
+from ..common.notch_extractor import NotchExtractor
+from ..common.singleton import Singleton
 
 
 class ListInterface(GalleryInterface):
@@ -33,26 +37,47 @@ class IconCardView(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+
+        self.data_provider = Singleton()
+        self.data_provider.data_changed.connect(self.dir_changed)
+
         self.trie = Trie()
         self.iconLibraryLabel = StrongBodyLabel(self.tr('搜索'), self)
-        self.searchLineEdit = SearchLineEdit(self)
+        self.searchLineEdit = LineEdit(self)
 
         self.view = QFrame(self)
         self.scrollArea = SmoothScrollArea(self.view)
         self.scrollWidget = QWidget(self.scrollArea)
-        self.infoPanel = IconInfoPanel(FluentIcon.ACCEPT, self)
+        self.infoPanel = ImageInfoPanel(self)
 
         self.vBoxLayout = QVBoxLayout(self)
         self.hBoxLayout = QHBoxLayout(self.view)
         self.flowLayout = FlowLayout(self.scrollWidget, isTight=True)
 
         self.cards = []     # type:List[PreviewCard]
-        self.imgs = []      # type:List[str]
+        self.dirs = []      # type:List[str]
         self.currentIndex = -1
 
         self.__initWidget()
+    
+    def dir_changed(self, value):
+        print(value)
+        # self.dirs = []
+        # if self.getImgList(value) != []:
+        #     for img in self.getImgList():
+        #         self.addImg(img)
+        #     self.setSelectedImg(self.dirs[0])
 
     def __initWidget(self):
+        self.updateImgList()
+
+        print(self.dirs)
+
+        if self.currentIndex >= 0:
+            self.cards[self.currentIndex].setSelected(True, True)
+        
+        #self.infoPanel.setImage(self.dirs[0])
+
         self.scrollArea.setWidget(self.scrollWidget)
         self.scrollArea.setViewportMargins(0, 5, 0, 5)
         self.scrollArea.setWidgetResizable(True)
@@ -67,23 +92,17 @@ class IconCardView(QWidget):
         # initialize style sheet
         self.view.setObjectName('preview')
         self.scrollWidget.setObjectName('scrollWidget')
+        self.infoPanel.setObjectName('infoPanel')
         StyleSheet.LIST_INTERFACE.apply(self)
         StyleSheet.LIST_INTERFACE.apply(self.scrollWidget)
-
-        if self.currentIndex >= 0:
-            self.cards[self.currentIndex].setSelected(True, True)
-
-        self.updateImgList()
 
         self.__initLayout()
         self.__connectSignalToSlot()
     
     def __initLayout(self):
-        # self.searchLineEdit.move(36, 80)
         self.searchLineEdit.setPlaceholderText(self.tr("搜索"))
         self.searchLineEdit.setFixedWidth(720)
-        self.searchLineEdit.textChanged.connect(self.search)
-        # self.view.move(36, 130)
+        # self.searchLineEdit.textChanged.connect(self.search)
 
         self.hBoxLayout.setSpacing(0)
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
@@ -100,15 +119,17 @@ class IconCardView(QWidget):
 
     def search(self, keyWord: str):
         """ search icons """
-        items = self.trie.items(keyWord.lower())
-        indexes = {i[1] for i in items}
-        self.flowLayout.removeAllWidgets()
+        regex = "\d*("+ keyWord +"+)\d*_*\d*"
+        target_pattern = re.compile(regex)
 
-        for i, card in enumerate(self.cards):
-            isVisible = i in indexes
-            card.setVisible(isVisible)
-            if isVisible:
-                self.flowLayout.addWidget(card)
+        results = [card for card in self.cards if re.search(target_pattern, card.name)]
+
+        for card in self.cards:
+            card.setVisible(False)
+        for card in results:
+            card.setVisible(True)
+        self.flowLayout.update()
+        self.setSelectedImg(results[0].dir)
 
     def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext='png'):
         fileList = []
@@ -122,12 +143,12 @@ class IconCardView(QWidget):
         return fileList
     
     def updateImgList(self):
-        self.imgs = []
+        self.dirs = []
         self.cards = []
         if self.getImgList(cfg.get(cfg.downloadFolder)) != []:
             for img in self.getImgList():
                 self.addImg(img)
-            self.setSelectedImg(self.imgs[0])
+            self.setSelectedImg(self.dirs[0])
         
     def showAllImgs(self):
         self.flowLayout.removeAllWidgets()
@@ -135,67 +156,76 @@ class IconCardView(QWidget):
             card.show()
             self.flowLayout.addWidget(card)
 
-    def addImg(self, img: str):
+    def addImg(self, img_dir: str):
         """ add icon to view """
-        card = PreviewCard(img, self)
+        card = PreviewCard(img_dir, self)
         card.clicked.connect(self.setSelectedImg)
-
-        self.trie.insert(img.split('/')[-1].split('\\')[-1].split('.')[0], len(self.cards))
         self.cards.append(card)
-        self.imgs.append(img)
+        self.dirs.append(img_dir)
         self.flowLayout.addWidget(card)
 
     def setSelectedImg(self, img_dir: str):
         """ set selected icon """
-        index = self.imgs.index(img_dir)
+        index = self.dirs.index(img_dir)
 
         if self.currentIndex >= 0:
             self.cards[self.currentIndex].setSelected(False)
-
+  
         self.currentIndex = index
         self.cards[index].setSelected(True)
+        self.infoPanel.setImage(img_dir)
 
-class IconInfoPanel(QFrame):
-    """ Icon info panel """
+class ImageInfoPanel(QFrame):
+    """ Image info panel """
 
-    def __init__(self, icon: FluentIcon, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.nameLabel = QLabel(icon.value, self)
-        self.iconWidget = IconWidget(icon, self)
-        self.iconNameTitleLabel = QLabel(self.tr('Icon name'), self)
-        self.iconNameLabel = QLabel(icon.value, self)
-        self.enumNameTitleLabel = QLabel(self.tr('Enum member'), self)
-        self.enumNameLabel = QLabel("FluentIcon." + icon.name, self)
+        self.imageInfoLabel = StrongBodyLabel(self)
+        self.originalImage = ImgWidget(self)
+
+        self.topPartTitleLabel = QLabel(self.tr('上半缀区'), self)
+        self.imageTop = ImgWidget(self)
+
+        self.bottomPartTitleLabel = QLabel(self.tr('下半缀区'), self)
+        self.imageBottom = ImgWidget(self)
 
         self.vBoxLayout = QVBoxLayout(self)
         self.vBoxLayout.setContentsMargins(16, 20, 16, 20)
         self.vBoxLayout.setSpacing(0)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.vBoxLayout.addWidget(self.nameLabel)
+        self.vBoxLayout.addWidget(self.imageInfoLabel)
         self.vBoxLayout.addSpacing(16)
-        self.vBoxLayout.addWidget(self.iconWidget)
-        self.vBoxLayout.addSpacing(45)
-        self.vBoxLayout.addWidget(self.iconNameTitleLabel)
-        self.vBoxLayout.addSpacing(5)
-        self.vBoxLayout.addWidget(self.iconNameLabel)
+        self.vBoxLayout.addWidget(self.originalImage)
         self.vBoxLayout.addSpacing(34)
-        self.vBoxLayout.addWidget(self.enumNameTitleLabel)
+        self.vBoxLayout.addWidget(self.topPartTitleLabel)
         self.vBoxLayout.addSpacing(5)
-        self.vBoxLayout.addWidget(self.enumNameLabel)
+        self.vBoxLayout.addWidget(self.imageTop)
+        self.vBoxLayout.addSpacing(34)
+        self.vBoxLayout.addWidget(self.bottomPartTitleLabel)
+        self.vBoxLayout.addSpacing(5)
+        self.vBoxLayout.addWidget(self.imageBottom)
 
-        self.iconWidget.setFixedSize(48, 48)
-        self.setFixedWidth(216)
+        self.originalImage.setFixedSize(96, 96)
+        self.imageTop.setFixedSize(96, 96)
+        self.imageBottom.setFixedSize(96, 96)
+        self.setFixedWidth(432)
 
-        self.nameLabel.setObjectName('nameLabel')
-        self.iconNameTitleLabel.setObjectName('subTitleLabel')
-        self.enumNameTitleLabel.setObjectName('subTitleLabel')
+        self.imageInfoLabel.setObjectName('imageInfoLabel')
 
-    def setIcon(self, icon: FluentIcon):
-        self.iconWidget.setIcon(icon)
-        self.nameLabel.setText(icon.value)
-        self.iconNameLabel.setText(icon.value)
-        self.enumNameLabel.setText("FluentIcon."+icon.name)
+    def setImage(self, img_dir):
+        name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
+        self.originalImage.setImg(img_dir)
+        self.imageTop.setImg(img_dir)
+        self.imageBottom.setImg(img_dir)
+
+        # image = cv2.imread(img_dir)
+
+        # top, bottom = NotchExtractor._get_notch(self, image)
+
+
+
+        self.imageInfoLabel.setText(name)
 
 
 class IconCard(QFrame):
@@ -249,12 +279,13 @@ class PreviewCard(QFrame):
     """ Preview card """
     clicked = pyqtSignal(str)
 
-    def __init__(self, img: str, parent=None):
+    def __init__(self, img_dir: str, parent=None):
         super().__init__(parent=parent)
-        self.img = img
+        self.name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
+        self.dir = img_dir
         self.isSelected = False
 
-        self.imgWidget = ImgWidget(img, self)
+        self.imgWidget = ImgWidget(img_dir, self)
         self.nameLabel = QLabel(self)
         self.vBoxLayout = QVBoxLayout(self)
 
@@ -267,24 +298,23 @@ class PreviewCard(QFrame):
         self.vBoxLayout.addSpacing(14)
         self.vBoxLayout.addWidget(self.nameLabel, 0, Qt.AlignmentFlag.AlignHCenter)
 
-        text = self.nameLabel.fontMetrics().elidedText(self.img.split('/')[-1].split('\\')[-1].split('.')[0], Qt.TextElideMode.ElideRight, 78)
+        text = self.nameLabel.fontMetrics().elidedText(self.name, Qt.TextElideMode.ElideRight, 78)
         self.nameLabel.setText(text)
 
     def mouseReleaseEvent(self, e):
         if self.isSelected:
             return
         
-        self.clicked.emit(self.img)
+        self.clicked.emit(self.dir)
 
     def setSelected(self, isSelected: bool, force=False):
         if isSelected == self.isSelected and not force:
             return
         self.isSelected = isSelected
         
-        self.imgWidget.setImg(self.img)
+        self.imgWidget.setImg(self.dir)
         self.setProperty('isSelected', isSelected)
         self.setStyle(QApplication.style())
-
 
 class ImgWidget(QWidget):
     """ Image widget """
@@ -341,3 +371,13 @@ class ImgWidget(QWidget):
             raise TypeError("img must be QIcon or str")
 
     img = pyqtProperty(QIcon, getImg, setImg)
+
+
+class LineEdit(SearchLineEdit):
+    """ Search line edit """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setPlaceholderText(self.tr('搜索'))
+        self.setFixedWidth(304)
+        self.textChanged.connect(self.search)

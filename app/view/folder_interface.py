@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import QWidget, QLabel, QFileDialog
 
 from ..common.config import cfg
 from ..common.style_sheet import StyleSheet
+from ..common.singleton import Singleton
 
 
 class FolderInterface(ScrollArea):
@@ -27,6 +28,8 @@ class FolderInterface(ScrollArea):
 
         # setting label
         self.settingLabel = QLabel(self.tr("项目文件管理"), self)
+
+        self.singleton_instance = Singleton()
      
 
         # folders
@@ -98,9 +101,11 @@ class FolderInterface(ScrollArea):
             self, self.tr("Choose folder"), "./")
         if not folder or cfg.get(cfg.downloadFolder) == folder:
             return
-
+        
         cfg.set(cfg.downloadFolder, folder)
         self.downloadFolderCard.setContent(folder)
+        # 修改单例文件地址
+        self.singleton_instance._instance.set_dir(folder)
 
     def __onAddModelCardClicked(self):
         """ add model folder card clicked slot """
