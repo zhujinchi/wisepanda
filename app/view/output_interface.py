@@ -33,7 +33,7 @@ class tableView(QWidget):
 
         # 构建背景层
         self.mainWidget = QWidget(self)
-        self.mainWidget.setFixedHeight(800)
+        self.mainWidget.setMinimumHeight(800)
         self.mainWidget.setStyleSheet("background-color: rgb(32, 32, 32); border: 0.4px solid rgb(29, 29, 29); border-radius: 5px;")
         
         # 构建表格

@@ -28,16 +28,6 @@ class ListInterface(GalleryInterface):
         
         self.vBoxLayout.addWidget(self.iconView)
 
-class testWidget(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        
-        self.initUI()
-    
-    def initUI(self):
-        self.setMinimumSize(800, 600)
-        self.setStyleSheet("background-color: red;")
-
 class IconCardView(QWidget):
     """ Icon card view """
 
@@ -74,15 +64,6 @@ class IconCardView(QWidget):
         self.vBoxLayout.addWidget(self.searchLineEdit)
         self.vBoxLayout.addWidget(self.view)
 
-        self.hBoxLayout.setSpacing(0)
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.hBoxLayout.addWidget(self.scrollWidget)
-        self.hBoxLayout.addWidget(self.infoPanel)
-
-        self.flowLayout.setVerticalSpacing(8)
-        self.flowLayout.setHorizontalSpacing(8)
-        self.flowLayout.setContentsMargins(8, 3, 8, 8)
-
         # initialize style sheet
         self.view.setObjectName('preview')
         self.scrollWidget.setObjectName('scrollWidget')
@@ -101,11 +82,13 @@ class IconCardView(QWidget):
         # self.searchLineEdit.move(36, 80)
         self.searchLineEdit.setPlaceholderText(self.tr("搜索"))
         self.searchLineEdit.setFixedWidth(720)
+        self.searchLineEdit.textChanged.connect(self.search)
         # self.view.move(36, 130)
 
         self.hBoxLayout.setSpacing(0)
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.hBoxLayout.addWidget(self.scrollArea)
+        self.hBoxLayout.addWidget(self.infoPanel, 0, Qt.AlignmentFlag.AlignRight)
 
         self.flowLayout.setVerticalSpacing(8)
         self.flowLayout.setHorizontalSpacing(8)
@@ -146,7 +129,6 @@ class IconCardView(QWidget):
                 self.addImg(img)
             self.setSelectedImg(self.imgs[0])
         
-
     def showAllImgs(self):
         self.flowLayout.removeAllWidgets()
         for card in self.cards:
@@ -216,9 +198,8 @@ class IconInfoPanel(QFrame):
         self.enumNameLabel.setText("FluentIcon."+icon.name)
 
 
-
 class IconCard(QFrame):
-    """ Icon card """
+    """ Icon card """ 
     clicked = pyqtSignal(FluentIcon)
 
     def __init__(self, icon: FluentIcon, parent=None):
