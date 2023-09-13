@@ -15,7 +15,7 @@ from .gallery_interface import GalleryInterface
 from ..common.config import cfg
 from ..common.trie import Trie
 from ..common.style_sheet import StyleSheet
-from ..common.notch_extractor import NotchExtractor
+from ..components.notch_extractor import NotchExtractor
 from ..common.singleton import Singleton
 
 
@@ -64,7 +64,7 @@ class IconCardView(QWidget):
     def __initWidget(self):
         self.updateImgList()
 
-        print(self.dirs)
+        # print(self.dirs)
 
         if self.currentIndex >= 0:
             self.cards[self.currentIndex].setSelected(True, True)
@@ -221,7 +221,11 @@ class ImageInfoPanel(QFrame):
     def setImage(self, img_dir):
         name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
         self.originalImage.setImg(img_dir)
-        
+        notch_extractor = NotchExtractor(img_dir)
+        top, bottom = notch_extractor.top_notch, notch_extractor.bottom_notch
+        # print(type(top), type(bottom))
+        self.imageTop.setImg(self.arrayToQIcon(top))
+        self.imageBottom.setImg(self.arrayToQIcon(bottom))
 
         # image = cv2.imread(img_dir)
         # s_img_dir = '/Users/angzeng/Documents/Project/缀合网络相关/trainval/100/219-08-02.png'
@@ -232,12 +236,12 @@ class ImageInfoPanel(QFrame):
 
         self.imageInfoLabel.setText(name)
     
-    def arrayToQIcon(ndarray):
+    def arrayToQIcon(self, ndarray):
         if isinstance(ndarray, np.ndarray):
             # 将ndarray转换为QPixmap
             height, width, channel = ndarray.shape
             bytes_per_line = 3 * width
-            qimage = QPixmap.fromImage(QImage(ndarray.data, width, height, bytes_per_line, QImage.Format_RGB888))
+            qimage = QPixmap.fromImage(QImage(ndarray.data, width, height, bytes_per_line, QImage.Format.Format_RGB888))
             
             # 将QPixmap转换为QIcon
             qicon = QIcon(qimage)
