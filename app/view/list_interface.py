@@ -124,7 +124,6 @@ class IconCardView(QWidget):
         self.setSelectedImg(results[0].dir)
 
 
-
     def dir_changed(self, value):
         self.dirs = []
         self.cards = []
@@ -134,7 +133,6 @@ class IconCardView(QWidget):
                 self.addImg(img)
             self.setSelectedImg(self.dirs[0])
         self.flowLayout.update()
-
 
 
     def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext='png'):
@@ -222,14 +220,13 @@ class ImageInfoPanel(QFrame):
     def setImage(self, img_dir):
         name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
         self.originalImage.setImg(img_dir)
-        self.imageTop.setImg(img_dir)
-        self.imageBottom.setImg(img_dir)
+        
 
         # image = cv2.imread(img_dir)
 
-        # top, bottom = NotchExtractor._get_notch(self, image)
-
-
+        #top, bottom = NotchExtractor._get_notch(img_dir)
+        # self.imageTop.setImg(top)
+        # self.imageBottom.setImg(bottom)
 
         self.imageInfoLabel.setText(name)
 

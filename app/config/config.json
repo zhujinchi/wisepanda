@@ -6,8 +6,8 @@
         "CheckUpdateAtStartUp": true
     },
     "Folders": {
-        "Download": "C:/Users/zhuji/Pictures/Saved Pictures/data/real_lines",
-        "Model": "D:/Github/Fratcher/app/model",
+        "Download": "/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data",
+        "Model": "/Users/angzeng/GitHub/Fratcher/D:/Github/Fratcher/app/model",
         "Slips": []
     },
     "MainWindow": {
