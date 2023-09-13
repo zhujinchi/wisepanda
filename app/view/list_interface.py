@@ -2,11 +2,12 @@
 import os
 import re
 import cv2
+import numpy as np
 from functools import singledispatchmethod
 from typing import List, Union
 
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtProperty, QRect, QRectF
-from PyQt6.QtGui import QIcon, QPainter, QPixmap
+from PyQt6.QtGui import QIcon, QPainter, QPixmap, QImage
 from qfluentwidgets import (ScrollArea, ExpandLayout, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon, IconWidget, Theme)
 from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QSizePolicy
 
@@ -223,12 +224,26 @@ class ImageInfoPanel(QFrame):
         
 
         # image = cv2.imread(img_dir)
-
-        #top, bottom = NotchExtractor._get_notch(img_dir)
-        # self.imageTop.setImg(top)
-        # self.imageBottom.setImg(bottom)
+        # s_img_dir = '/Users/angzeng/Documents/Project/缀合网络相关/trainval/100/219-08-02.png'
+        # top, bottom = NotchExtractor._get_notch(s_img_dir)
+       
+        # self.imageTop.setImg(self.arrayToQIcon(top))
+        # self.imageBottom.setImg(self.arrayToQIcon(bottom))
 
         self.imageInfoLabel.setText(name)
+    
+    def arrayToQIcon(ndarray):
+        if isinstance(ndarray, np.ndarray):
+            # 将ndarray转换为QPixmap
+            height, width, channel = ndarray.shape
+            bytes_per_line = 3 * width
+            qimage = QPixmap.fromImage(QImage(ndarray.data, width, height, bytes_per_line, QImage.Format_RGB888))
+            
+            # 将QPixmap转换为QIcon
+            qicon = QIcon(qimage)
+            return qicon
+        else:
+            return None
 
 
 class IconCard(QFrame):

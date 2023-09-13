@@ -20,7 +20,7 @@ class NotchExtractor:
 
             for r in range(height):
                 for c in range(width):
-                    if image[r][c]-0 > 0.001:
+                    if (image[r][c] - 0 > 0.001).any():
                         count += 1
                 row_count[r] = count
                 count = 0
