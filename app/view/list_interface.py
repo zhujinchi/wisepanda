@@ -8,7 +8,7 @@ from typing import List, Union
 
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtProperty, QRect, QRectF
 from PyQt6.QtGui import QIcon, QPainter, QPixmap, QImage
-from qfluentwidgets import (ScrollArea, ExpandLayout, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon, IconWidget, Theme)
+from qfluentwidgets import (SubtitleLabel, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon, IconWidget, Theme, PushButton, PushButton, InfoBar, InfoBarPosition)
 from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QSizePolicy
 
 from .gallery_interface import GalleryInterface
@@ -28,9 +28,8 @@ class ListInterface(GalleryInterface):
             parent=parent
         )
         self.setObjectName('iconInterface')
-
         self.iconView = IconCardView(self)
-        
+
         self.vBoxLayout.addWidget(self.iconView)
 
 class IconCardView(QWidget):
@@ -38,9 +37,8 @@ class IconCardView(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-
         self.data_provider = Singleton()
-        self.data_provider.data_changed.connect(self.dir_changed)
+        self.data_provider.dir_changed.connect(self.dir_changed)
 
         self.trie = Trie()
         self.iconLibraryLabel = StrongBodyLabel(self.tr('搜索'), self)
@@ -185,13 +183,55 @@ class ImageInfoPanel(QFrame):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+
+        self.singleton_instance = Singleton()
+
         self.imageInfoLabel = StrongBodyLabel(self)
+        self.imageInfoLabel.setContentsMargins(8, 0, 0, 0)
+        self.imageInfoLabel.setStyleSheet("border-left: 0px solid rgb(29, 29, 29);")
         self.originalImage = ImgWidget(self)
 
-        self.topPartTitleLabel = QLabel(self.tr('上半缀区'), self)
+        # 创建分隔线
+        self.line1_widget = QWidget(self)
+        self.line1_widget.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29);")
+        self.line1_widget.setFixedSize(140,1) 
+        self.line2_widget = QWidget(self)
+        self.line2_widget.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29);")
+        self.line2_widget.setFixedSize(140,1) 
+
+        #上半缀区组件
+        self.topPartTitleLabel = StrongBodyLabel('上半缀区')
+        self.topPartTitleLabel.setStyleSheet("border-left: 0px solid rgb(29, 29, 29);")
+        self.top_button = PushButton("缀区开始匹配", self)
+        self.top_button.clicked.connect(self.getResultList)
+        top_horizontal_layout = QHBoxLayout()
+        top_horizontal_layout.addWidget(self.topPartTitleLabel)
+        top_horizontal_layout.addSpacing(40)
+        top_horizontal_layout.addWidget(self.line1_widget)
+        top_horizontal_layout.addSpacing(30)
+        top_horizontal_layout.addWidget(self.top_button)
+
+        # 创建一个容器 QWidget，并将水平布局设置为其布局
+        top_container_widget = QWidget(self)
+        top_container_widget.setStyleSheet("border-left: 0px solid rgb(29, 29, 29);")
+        top_container_widget.setLayout(top_horizontal_layout)
         self.imageTop = ImgWidget(self)
 
-        self.bottomPartTitleLabel = QLabel(self.tr('下半缀区'), self)
+        #下半缀区组件
+        self.bottomPartTitleLabel = StrongBodyLabel('下半缀区')
+        self.bottom_button = PushButton("缀区开始匹配", self)
+        self.bottom_button.clicked.connect(self.getResultList)
+        bottom_horizontal_layout = QHBoxLayout()
+        bottom_horizontal_layout.addWidget(self.bottomPartTitleLabel)
+        bottom_horizontal_layout.addSpacing(40)
+        bottom_horizontal_layout.addWidget(self.line2_widget)
+        bottom_horizontal_layout.addSpacing(30)
+        bottom_horizontal_layout.addWidget(self.bottom_button)
+
+        # 创建一个容器 QWidget，并将水平布局设置为其布局
+        bottom_container_widget = QWidget(self)
+        bottom_container_widget.setStyleSheet("border-left: 0px solid rgb(29, 29, 29);")
+        bottom_container_widget.setLayout(bottom_horizontal_layout)
         self.imageBottom = ImgWidget(self)
 
         self.vBoxLayout = QVBoxLayout(self)
@@ -201,15 +241,15 @@ class ImageInfoPanel(QFrame):
 
         self.vBoxLayout.addWidget(self.imageInfoLabel)
         self.vBoxLayout.addSpacing(16)
-        self.vBoxLayout.addWidget(self.originalImage)
+        self.vBoxLayout.addWidget(self.originalImage, 0, Qt.AlignmentFlag.AlignHCenter)
         self.vBoxLayout.addSpacing(34)
-        self.vBoxLayout.addWidget(self.topPartTitleLabel)
+        self.vBoxLayout.addWidget(top_container_widget)
         self.vBoxLayout.addSpacing(5)
-        self.vBoxLayout.addWidget(self.imageTop)
+        self.vBoxLayout.addWidget(self.imageTop, 0, Qt.AlignmentFlag.AlignHCenter)
         self.vBoxLayout.addSpacing(34)
-        self.vBoxLayout.addWidget(self.bottomPartTitleLabel)
+        self.vBoxLayout.addWidget(bottom_container_widget)
         self.vBoxLayout.addSpacing(5)
-        self.vBoxLayout.addWidget(self.imageBottom)
+        self.vBoxLayout.addWidget(self.imageBottom, 0, Qt.AlignmentFlag.AlignHCenter)
 
         self.originalImage.setFixedSize(96, 96)
         self.imageTop.setFixedSize(96, 96)
@@ -217,27 +257,39 @@ class ImageInfoPanel(QFrame):
         self.setFixedWidth(432)
 
         self.imageInfoLabel.setObjectName('imageInfoLabel')
+        self.setStyleSheet("background-color: rgb(43, 43, 43); border-left: 1px solid rgb(29, 29, 29); border-top-right-radius: 10px; border-bottom-right-radius: 10px;"
+                           "Qframe")
+
+    def getResultList(self):
+        InfoBar.info(
+            title=self.tr('正在计算'),
+            content=self.tr("匹配结果计算中，请稍后"),
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.BOTTOM_RIGHT,
+            duration=16000,
+            parent=self
+        )
+        # 修改单例文件地址
+        self.singleton_instance._instance.set_result_list(['/Users/angzeng/Documents/Project/缀合网络相关/trainval/100/219-08-02.png','/Users/angzeng/Documents/Project/缀合网络相关/trainval/100/219-08-02.png'])
 
     def setImage(self, img_dir):
         name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
         self.originalImage.setImg(img_dir)
-        
+        notch_extractor = NotchExtractor(img_dir)
+        top, bottom = notch_extractor.top_notch, notch_extractor.bottom_notch
+        # print(type(top), type(bottom))
+        self.imageTop.setImg(self.arrayToQIcon(top))
+        self.imageBottom.setImg(self.arrayToQIcon(bottom))
 
-        # image = cv2.imread(img_dir)
-        # s_img_dir = '/Users/angzeng/Documents/Project/缀合网络相关/trainval/100/219-08-02.png'
-        # top, bottom = NotchExtractor._get_notch(s_img_dir)
-       
-        # self.imageTop.setImg(self.arrayToQIcon(top))
-        # self.imageBottom.setImg(self.arrayToQIcon(bottom))
-
-        self.imageInfoLabel.setText(name)
+        self.imageInfoLabel.setText("文件名："+ name)
     
-    def arrayToQIcon(ndarray):
+    def arrayToQIcon(self, ndarray):
         if isinstance(ndarray, np.ndarray):
             # 将ndarray转换为QPixmap
             height, width, channel = ndarray.shape
             bytes_per_line = 3 * width
-            qimage = QPixmap.fromImage(QImage(ndarray.data, width, height, bytes_per_line, QImage.Format_RGB888))
+            qimage = QPixmap.fromImage(QImage(ndarray.data, width, height, bytes_per_line, QImage.Format.Format_RGB888))
             
             # 将QPixmap转换为QIcon
             qicon = QIcon(qimage)

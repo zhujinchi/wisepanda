@@ -6,7 +6,8 @@ from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor
 from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectionScrollArea, SmoothScrollArea, ScrollArea, HollowHandleStyle, Slider, setTheme, Theme, PushButton, BodyLabel, IconWidget, TextWrap, FlowLayout
 
 
-from .gallery_interface import GalleryInterface 
+from .gallery_interface import GalleryInterface
+from ..common.singleton import Singleton 
 
 class MatchInterface(GalleryInterface):
     """ Match interface """
@@ -29,6 +30,9 @@ class ImageWidget(QWidget):
         self.initUI()
 
     def initUI(self):
+
+        self.data_provider = Singleton()
+        self.data_provider.list_changed.connect(self.updateResultList)
 
         self.original_pixmap1 = None  # 存储原始加载的图片
         self.original_pixmap2 = None  # 存储原始加载的图片
@@ -54,7 +58,7 @@ class ImageWidget(QWidget):
         scroll_area.setWidget(scroll_content)
 
         # 创建一个水平布局来容纳子 widget
-        layout = QHBoxLayout(scroll_content)
+        self.result_layout = QHBoxLayout(scroll_content)
 
         # 创建 widget
         self.image_list = ['/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data/0_1.png', '/Users/angzeng/Documents/缀合网络相关/trainval/107/240-05-01.png']
@@ -63,10 +67,10 @@ class ImageWidget(QWidget):
         for i in range(50):
             child_widget =  SampleCard(self.image_list[1], 'score: 10.56', i, self)
             child_widget.clicked.connect(lambda: self.chooseImage2(self.image_list[1]))
-            layout.addWidget(child_widget)
+            self.result_layout.addWidget(child_widget)
         
         # 设置容器 widget 的布局
-        scroll_content.setLayout(layout)
+        scroll_content.setLayout(self.result_layout)
 
         # 添加滚动区域到 self.top_layout 中
         self.top_layout.addWidget(scroll_area)
@@ -245,6 +249,24 @@ class ImageWidget(QWidget):
 
         self.setLayout(self.layout)
 
+    # 更新result_list的方法
+    def updateResultList(self, list):
+        # 清除现有子widget
+        for i in reversed(range(self.result_layout.count())):
+            widget = self.result_layout.itemAt(i).widget()
+            if widget:
+                widget.deleteLater()
+
+        # 创建新的子widget
+        new_image_list = list
+        for i, image_path in enumerate(new_image_list):
+            child_widget = SampleCard(image_path, f'score: {10.56}', i, self)
+            child_widget.clicked.connect(lambda: self.chooseImage2(image_path))
+            self.result_layout.addWidget(child_widget)
+
+        # 更新布局
+        self.result_layout.update()
+
     # 图片1加载方法
     def loadImage1(self):
             file_name, _ = QFileDialog.getOpenFileName(self, "Select Image1", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;All Files (*)")
@@ -418,7 +440,7 @@ class SampleCard(QFrame):
         super().__init__(parent=parent)
 
         self.index = index
-        self.title = f"rank: {index}"
+        self.title = f"排名: {index+1}"
         self.icon = icon
 
         self.iconWidget = IconWidget(icon, self)
