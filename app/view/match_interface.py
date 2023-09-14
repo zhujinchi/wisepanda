@@ -9,6 +9,7 @@ from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectio
 from .gallery_interface import GalleryInterface
 from ..common.singleton_output import Singleton_output
 from ..common.singleton_result import Singleton_result
+from ..common.singleton_img import Singleton_img
 
 class MatchInterface(GalleryInterface):
     """ Match interface """
@@ -34,6 +35,8 @@ class ImageWidget(QWidget):
         self.data_provider = Singleton_result()
         self.data_changer = Singleton_output()
         self.data_provider.list_changed.connect(self.updateResultList)
+        self.img_provider = Singleton_img()
+        self.img_provider.dir_changed.connect(self.chooseImage1)
 
         self.original_pixmap1 = None  # 存储原始加载的图片
         self.original_pixmap2 = None  # 存储原始加载的图片
@@ -258,7 +261,7 @@ class ImageWidget(QWidget):
             if widget:
                 widget.deleteLater()
 
-        # 创建新的子widget
+        # 创建新的子widget #A修改
         new_image_list = list
         for i, image_path in enumerate(new_image_list):
             child_widget = SampleCard(image_path, f'score: {10.56}', i, self)
@@ -271,6 +274,22 @@ class ImageWidget(QWidget):
     # 图片1加载方法
     def loadImage1(self):
             file_name, _ = QFileDialog.getOpenFileName(self, "Select Image1", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;All Files (*)")
+            print(file_name)
+            if file_name:
+                self.original_pixmap1 = QPixmap(file_name)  # 存储原始加载的图片
+                self.image_label1.setPixmap(self.original_pixmap1)
+                self.image_label1.setFixedSize(self.original_pixmap1.size())  # 设置image_label1的大小与图片大小一致
+                InfoBar.success(
+                title='提示消息',
+                content="图片1加载成功。",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM_RIGHT,
+                duration=3000,    # won't disappear automatically
+                parent=self
+            )
+                
+    def chooseImage1(self, file_name):
             print(file_name)
             if file_name:
                 self.original_pixmap1 = QPixmap(file_name)  # 存储原始加载的图片

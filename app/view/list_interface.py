@@ -18,6 +18,7 @@ from ..common.style_sheet import StyleSheet
 from ..common.notch_extractor import NotchExtractor
 from ..common.singleton_dir import Singleton_dir
 from ..common.singleton_result import Singleton_result
+from ..common.singleton_img import Singleton_img
 
 
 class ListInterface(GalleryInterface):
@@ -184,6 +185,7 @@ class ImageInfoPanel(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
+        self.img_changer = Singleton_img()
         self.singleton_instance = Singleton_result()
         self.file_list = []
         parent.filelistChanged.connect(self.onFileListChanged)
@@ -281,6 +283,8 @@ class ImageInfoPanel(QFrame):
     def setImage(self, img_dir):
         name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
         self.originalImage.setImg(img_dir)
+        self.img_changer._instance.set_dir(img_dir)
+
         notch_extractor = NotchExtractor(img_dir)
         top, bottom = notch_extractor.top_notch, notch_extractor.bottom_notch
         # print(type(top), type(bottom))
