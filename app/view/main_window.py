@@ -27,8 +27,8 @@ class MainWindow(FluentWindow):
         # create sub interface
         self.folderInterface = FolderInterface(self)
         self.listInterface = ListInterface(self)
-        self.outputInterface = OutputInterface(self)
         self.matchInterface = MatchInterface(self)
+        self.outputInterface = OutputInterface(self)
         self.settingInterface = SettingInterface(self)
         
 

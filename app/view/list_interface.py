@@ -16,7 +16,8 @@ from ..common.config import cfg
 from ..common.trie import Trie
 from ..common.style_sheet import StyleSheet
 from ..common.notch_extractor import NotchExtractor
-from ..common.singleton import Singleton
+from ..common.singleton_dir import Singleton_dir
+from ..common.singleton_result import Singleton_result
 
 
 class ListInterface(GalleryInterface):
@@ -34,10 +35,10 @@ class ListInterface(GalleryInterface):
 
 class IconCardView(QWidget):
     """ Icon card view """
-
+    filelistChanged = pyqtSignal(list)
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.data_provider = Singleton()
+        self.data_provider = Singleton_dir()
         self.data_provider.dir_changed.connect(self.dir_changed)
 
         self.trie = Trie()
@@ -61,8 +62,6 @@ class IconCardView(QWidget):
     
     def __initWidget(self):
         self.updateImgList()
-
-        print(self.dirs)
 
         if self.currentIndex >= 0:
             self.cards[self.currentIndex].setSelected(True, True)
@@ -143,6 +142,7 @@ class IconCardView(QWidget):
                 fileList.append(os.path.join(dirs, file))
             else:
                 continue
+        self.filelistChanged.emit(fileList)
         return fileList
     
     def updateImgList(self):
@@ -184,7 +184,9 @@ class ImageInfoPanel(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.singleton_instance = Singleton()
+        self.singleton_instance = Singleton_result()
+        self.file_list = []
+        parent.filelistChanged.connect(self.onFileListChanged)
 
         self.imageInfoLabel = StrongBodyLabel(self)
         self.imageInfoLabel.setContentsMargins(8, 0, 0, 0)
@@ -259,6 +261,9 @@ class ImageInfoPanel(QFrame):
         self.imageInfoLabel.setObjectName('imageInfoLabel')
         self.setStyleSheet("background-color: rgb(43, 43, 43); border-left: 1px solid rgb(29, 29, 29); border-top-right-radius: 10px; border-bottom-right-radius: 10px;"
                            "Qframe")
+
+    def onFileListChanged(self, filelist):
+        self.file_list = filelist
 
     def getResultList(self):
         InfoBar.info(

@@ -7,7 +7,8 @@ from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectio
 
 
 from .gallery_interface import GalleryInterface
-from ..common.singleton import Singleton 
+from ..common.singleton_output import Singleton_output
+from ..common.singleton_result import Singleton_result
 
 class MatchInterface(GalleryInterface):
     """ Match interface """
@@ -30,8 +31,8 @@ class ImageWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-
-        self.data_provider = Singleton()
+        self.data_provider = Singleton_result()
+        self.data_changer = Singleton_output()
         self.data_provider.list_changed.connect(self.updateResultList)
 
         self.original_pixmap1 = None  # 存储原始加载的图片
@@ -322,6 +323,12 @@ class ImageWidget(QWidget):
                 
     # 图片2加载方法
     def outputList(self):
+            #old_list = self.data_provider._instance.get_output_list()
+            # sample ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
+            new_list = ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
+            
+            self.data_changer._instance.set_result_list(new_list)
+
             InfoBar.success(
             title='提示消息',
             content="匹配项置入导出列表。",

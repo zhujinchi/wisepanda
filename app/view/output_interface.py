@@ -2,10 +2,10 @@
 from PyQt6.QtCore import Qt, QFile, QTextStream, pyqtSignal
 from PyQt6.QtWidgets import QFrame, QTreeWidgetItem, QHBoxLayout, QTreeWidgetItemIterator, QTableWidgetItem, QListWidgetItem, QWidget, QVBoxLayout, QHBoxLayout, QFileDialog
 from qfluentwidgets import TreeWidget, TableWidget, ListWidget, PushButton, InfoBar, InfoBarIcon, InfoBarPosition
-
 from openpyxl import Workbook
 
 from .gallery_interface import GalleryInterface
+from ..common.singleton_output import Singleton_output
 
 class OutputInterface(GalleryInterface):
     """ Output interface """
@@ -19,7 +19,9 @@ class OutputInterface(GalleryInterface):
 
         self.mainView = tableView(self)
         
+        
         self.vBoxLayout.addWidget(self.mainView)
+    
 
 class tableView(QWidget):
 
@@ -29,7 +31,11 @@ class tableView(QWidget):
         self.initUI()
     
     def initUI(self):
+        
+
+
         self.layout = QVBoxLayout()
+        
 
         # 构建背景层
         self.mainWidget = QWidget(self)
@@ -40,7 +46,8 @@ class tableView(QWidget):
         self.table_layout = QVBoxLayout()
         self.tableWidget = TableFrame(self)
         self.table_layout.addWidget(self.tableWidget)
-        
+
+    
         self.mainWidget.setLayout(self.table_layout)
 
         self.download_button = PushButton('列表下载(.xlsx)', self.mainWidget)
@@ -68,17 +75,15 @@ class TableFrame(Frame):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
         self.table = TableWidget(self)
         self.addWidget(self.table)
+        self.data_provider = Singleton_output()
+        self.data_provider.list_changed.connect(self.updateTable)
 
-        self.slipMatchList = [
+        self.slipMatchList = [['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
             ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-        ]
+             ]
 
         self.table.verticalHeader().show()
         self.table.setColumnCount(5)
@@ -88,12 +93,32 @@ class TableFrame(Frame):
             self.tr('图片一路径'), self.tr('图片二路径'), self.tr('置入时间')
         ])
         
-        for i, songInfo in enumerate(self.slipMatchList):
+        for i, listInfo in enumerate(self.slipMatchList):
             for j in range(5):
-                self.table.setItem(i, j, QTableWidgetItem(songInfo[j]))
+                self.table.setItem(i, j, QTableWidgetItem(listInfo[j]))
 
         # self.setFixedSize(800, 440)
         self.table.resizeColumnsToContents()
+    
+    def updateTable(self, value):
+        # 添加新的数据到slipMatchList
+        print(value)
+        self.slipMatchList.append(value[0])
+        print(self.slipMatchList)
+        # 增加表格的行数
+        self.table.setRowCount(len(self.slipMatchList))
+
+        # 将新的数据更新到表格的对应单元格中
+        for i, listInfo in enumerate(self.slipMatchList):
+            for j in range(5):
+                self.table.setItem(i, j, QTableWidgetItem(listInfo[j]))
+
+        # 调整表格列宽以适应新的数据
+        self.table.resizeColumnsToContents()
+
+        # 触发表格的更新
+        self.table.update()
+
     
     def __save_file__(self):
         # 打开文件对话框，让用户选择保存的地址和文件名
