@@ -6,7 +6,7 @@ import numpy as np
 from functools import singledispatchmethod
 from typing import List, Union
 
-from PyQt6.QtCore import Qt, pyqtSignal, pyqtProperty, QRect, QRectF
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtProperty, QRect, QRectF, QCoreApplication
 from PyQt6.QtGui import QIcon, QPainter, QPixmap, QImage
 from qfluentwidgets import (SubtitleLabel, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon, IconWidget, Theme, PushButton, PushButton, InfoBar, InfoBarPosition)
 from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QSizePolicy
@@ -19,6 +19,7 @@ from ..common.notch_extractor import NotchExtractor
 from ..common.singleton_dir import Singleton_dir
 from ..common.singleton_result import Singleton_result
 from ..common.singleton_img import Singleton_img
+from ..common.score_calculator import ScoreCalculator
 
 
 class ListInterface(GalleryInterface):
@@ -188,6 +189,7 @@ class ImageInfoPanel(QFrame):
         self.img_changer = Singleton_img()
         self.singleton_instance = Singleton_result()
         self.file_list = []
+        self.top, self.bottom = None, None
         parent.filelistChanged.connect(self.onFileListChanged)
 
         self.imageInfoLabel = StrongBodyLabel(self)
@@ -207,7 +209,7 @@ class ImageInfoPanel(QFrame):
         self.topPartTitleLabel = StrongBodyLabel('上半缀区')
         self.topPartTitleLabel.setStyleSheet("border-left: 0px solid rgb(29, 29, 29);")
         self.top_button = PushButton("缀区开始匹配", self)
-        self.top_button.clicked.connect(self.getResultList)
+        self.top_button.clicked.connect(lambda: self.getResultList("top"))
         top_horizontal_layout = QHBoxLayout()
         top_horizontal_layout.addWidget(self.topPartTitleLabel)
         top_horizontal_layout.addSpacing(40)
@@ -224,7 +226,7 @@ class ImageInfoPanel(QFrame):
         #下半缀区组件
         self.bottomPartTitleLabel = StrongBodyLabel('下半缀区')
         self.bottom_button = PushButton("缀区开始匹配", self)
-        self.bottom_button.clicked.connect(self.getResultList)
+        self.bottom_button.clicked.connect(lambda: self.getResultList("bottom"))
         bottom_horizontal_layout = QHBoxLayout()
         bottom_horizontal_layout.addWidget(self.bottomPartTitleLabel)
         bottom_horizontal_layout.addSpacing(40)
@@ -267,18 +269,24 @@ class ImageInfoPanel(QFrame):
     def onFileListChanged(self, filelist):
         self.file_list = filelist
 
-    def getResultList(self):
-        InfoBar.info(
-            title=self.tr('正在计算'),
-            content=self.tr("匹配结果计算中，请稍后"),
+    def getResultList(self, direction):
+        QCoreApplication.processEvents()
+        if direction == 'top':
+            result_list = ScoreCalculator.get_score('bottom', self.top, self.file_list)
+        else:
+            result_list = ScoreCalculator.get_score('top', self.bottom, self.file_list)
+
+        # 修改单例文件地址
+        self.singleton_instance._instance.set_result_list(result_list)
+        InfoBar.success(
+            title=self.tr('计算完成'),
+            content=self.tr("匹配结果计算完毕"),
             orient=Qt.Orientation.Horizontal,
             isClosable=True,
             position=InfoBarPosition.BOTTOM_RIGHT,
             duration=16000,
             parent=self
         )
-        # 修改单例文件地址
-        self.singleton_instance._instance.set_result_list(['/Users/angzeng/Documents/Project/缀合网络相关/trainval/100/219-08-02.png','/Users/angzeng/Documents/Project/缀合网络相关/trainval/100/219-08-02.png'])
 
     def setImage(self, img_dir):
         name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
@@ -286,8 +294,12 @@ class ImageInfoPanel(QFrame):
         self.img_changer._instance.set_dir(img_dir)
 
         notch_extractor = NotchExtractor(img_dir)
-        top, bottom = notch_extractor.top_notch, notch_extractor.bottom_notch
+        self.top, self.bottom = notch_extractor.extract_top(), notch_extractor.extract_bottom()
         # print(type(top), type(bottom))
+        crop_size_top = (64,int((self.top.shape[0]*64)/self.top.shape[1]))
+        crop_size_bottom = (64,int((self.bottom.shape[0]*64)/self.bottom.shape[1]))
+        top = cv2.resize(self.top, crop_size_top, interpolation=cv2.INTER_AREA)
+        bottom = cv2.resize(self.bottom, crop_size_bottom, interpolation=cv2.INTER_AREA)
         self.imageTop.setImg(self.arrayToQIcon(top))
         self.imageBottom.setImg(self.arrayToQIcon(bottom))
 

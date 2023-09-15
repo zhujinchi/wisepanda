@@ -1,6 +1,7 @@
 # coding:utf-8
 import sys
-from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve
+import time
+from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve, QDateTime
 from PyQt6.QtWidgets import QScrollArea, QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QWidget, QSlider, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy, QFrame, QGraphicsOpacityEffect
 from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor
 from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectionScrollArea, SmoothScrollArea, ScrollArea, HollowHandleStyle, Slider, setTheme, Theme, PushButton, BodyLabel, IconWidget, TextWrap, FlowLayout
@@ -43,6 +44,9 @@ class ImageWidget(QWidget):
         self.image_label1_position = QPoint(0, 0)  # 记录图片的当前位置
         self.image_label2_position = QPoint(0, 0)  # 记录图片的当前位置
 
+        self.output_image1 = ''
+        self.output_image2 = ''
+
 
         self.layout = QVBoxLayout()
 
@@ -68,7 +72,7 @@ class ImageWidget(QWidget):
         self.image_list = ['/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data/0_1.png', '/Users/angzeng/Documents/缀合网络相关/trainval/107/240-05-01.png']
 
         # 添加一系列的子 widget
-        for i in range(50):
+        for i in range(0):
             child_widget =  SampleCard(self.image_list[1], 'score: 10.56', i, self)
             child_widget.clicked.connect(lambda: self.chooseImage2(self.image_list[1]))
             self.result_layout.addWidget(child_widget)
@@ -254,7 +258,7 @@ class ImageWidget(QWidget):
         self.setLayout(self.layout)
 
     # 更新result_list的方法
-    def updateResultList(self, list):
+    def updateResultList(self, img_list):
         # 清除现有子widget
         for i in reversed(range(self.result_layout.count())):
             widget = self.result_layout.itemAt(i).widget()
@@ -262,10 +266,11 @@ class ImageWidget(QWidget):
                 widget.deleteLater()
 
         # 创建新的子widget #A修改
-        new_image_list = list
-        for i, image_path in enumerate(new_image_list):
-            child_widget = SampleCard(image_path, f'score: {10.56}', i, self)
-            child_widget.clicked.connect(lambda: self.chooseImage2(image_path))
+        for i, image_score_path in enumerate(img_list):
+            print(list[0])
+            print(image_score_path[1])
+            child_widget = SampleCard(image_score_path[1], f'score: {image_score_path[0]}', i, self)
+            child_widget.clicked.connect(lambda path=image_score_path[1]: self.chooseImage2(path))
             self.result_layout.addWidget(child_widget)
 
         # 更新布局
@@ -276,6 +281,7 @@ class ImageWidget(QWidget):
             file_name, _ = QFileDialog.getOpenFileName(self, "Select Image1", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;All Files (*)")
             print(file_name)
             if file_name:
+                self.output_image1 = file_name
                 self.original_pixmap1 = QPixmap(file_name)  # 存储原始加载的图片
                 self.image_label1.setPixmap(self.original_pixmap1)
                 self.image_label1.setFixedSize(self.original_pixmap1.size())  # 设置image_label1的大小与图片大小一致
@@ -291,6 +297,7 @@ class ImageWidget(QWidget):
                 
     def chooseImage1(self, file_name):
             print(file_name)
+            self.output_image1 = file_name
             if file_name:
                 self.original_pixmap1 = QPixmap(file_name)  # 存储原始加载的图片
                 self.image_label1.setPixmap(self.original_pixmap1)
@@ -307,6 +314,7 @@ class ImageWidget(QWidget):
 
     def chooseImage2(self, file_name):
             print(file_name)
+            self.output_image2 = file_name
             if file_name:
                 self.original_pixmap2 = QPixmap(file_name)  # 存储原始加载的图片
                 self.image_label2.setPixmap(self.original_pixmap2)
@@ -327,6 +335,7 @@ class ImageWidget(QWidget):
             file_name, _ = QFileDialog.getOpenFileName(self, "Select Image2", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;All Files (*)")
             
             if file_name:
+                self.output_image2 = file_name
                 self.original_pixmap2 = QPixmap(file_name)  # 存储原始加载的图片
                 self.image_label2.setPixmap(self.original_pixmap2)
                 self.image_label2.setFixedSize(self.original_pixmap2.size())  # 设置image_label1的大小与图片大小一致
@@ -344,19 +353,32 @@ class ImageWidget(QWidget):
     def outputList(self):
             #old_list = self.data_provider._instance.get_output_list()
             # sample ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            new_list = ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            
-            self.data_changer._instance.set_result_list(new_list)
+            if self.output_image1 == '' or self.output_image2 == '':
+                InfoBar.warning(
+                title='导出错误',
+                content="图片地址为空",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM_RIGHT,
+                duration=3000,    # won't disappear automatically
+                parent=self
+            )
+            else:
+                now = int(round(time.time()*1000))
+                nowTime = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(now/1000))
+                new_list = [self.output_image1, self.output_image2, 'None info', 'None info', nowTime],
+                
+                self.data_changer._instance.set_result_list(new_list)
 
-            InfoBar.success(
-            title='提示消息',
-            content="匹配项置入导出列表。",
-            orient=Qt.Orientation.Horizontal,
-            isClosable=True,
-            position=InfoBarPosition.BOTTOM_RIGHT,
-            duration=3000,    # won't disappear automatically
-            parent=self
-        )
+                InfoBar.success(
+                title='提示消息',
+                content="匹配项置入导出列表。",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM_RIGHT,
+                duration=3000,    # won't disappear automatically
+                parent=self
+            )
         
     # 图片1透明度方法
     def setOpacity1(self, value):

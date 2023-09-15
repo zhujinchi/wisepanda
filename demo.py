@@ -10,6 +10,8 @@ from qfluentwidgets import FluentTranslator
 from app.common.config import cfg
 from app.view.main_window import MainWindow
 
+from app.common.vector_net import VectorNet
+
 
 # enable dpi scale
 if cfg.get(cfg.dpiScale) != "Auto":

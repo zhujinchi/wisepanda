@@ -81,16 +81,14 @@ class TableFrame(Frame):
         self.data_provider = Singleton_output()
         self.data_provider.list_changed.connect(self.updateTable)
 
-        self.slipMatchList = [['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-            ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
-             ]
+        self.slipMatchList = []
 
         self.table.verticalHeader().show()
         self.table.setColumnCount(5)
         self.table.setRowCount(len(self.slipMatchList))
         self.table.setHorizontalHeaderLabels([
             self.tr('图片一'), self.tr('图片二'),
-            self.tr('图片一路径'), self.tr('图片二路径'), self.tr('置入时间')
+            self.tr('附加信息'), self.tr('备注'), self.tr('置入时间')
         ])
         
         for i, listInfo in enumerate(self.slipMatchList):
@@ -98,7 +96,12 @@ class TableFrame(Frame):
                 self.table.setItem(i, j, QTableWidgetItem(listInfo[j]))
 
         # self.setFixedSize(800, 440)
-        self.table.resizeColumnsToContents()
+        self.table.setColumnWidth(0, 300)
+        self.table.setColumnWidth(1, 300)
+        self.table.setColumnWidth(2, 200)
+        self.table.setColumnWidth(3, 200)
+        self.table.setColumnWidth(4, 280)
+        # self.table.resizeColumnsToContents()
     
     def updateTable(self, value):
         # 添加新的数据到slipMatchList
