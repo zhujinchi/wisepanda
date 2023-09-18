@@ -6,7 +6,7 @@
         "CheckUpdateAtStartUp": true
     },
     "Folders": {
-        "Download": "/Users/angzeng/GitHub/Defragment-Neural-Network/data/test_data",
+        "Download": "/Users/angzeng/GitHub/Defragment-Neural-Network/data/origin_data",
         "Model": "/Users/angzeng/Desktop/Fratcher 3",
         "Slips": []
     },

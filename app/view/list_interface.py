@@ -21,6 +21,10 @@ from ..common.singleton_result import Singleton_result
 from ..common.singleton_img import Singleton_img
 from ..common.score_calculator import ScoreCalculator
 
+global app_path
+
+app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 class ListInterface(GalleryInterface):
     """ List interface """
@@ -164,6 +168,10 @@ class IconCardView(QWidget):
     def addImg(self, img_dir: str):
         """ add icon to view """
         card = PreviewCard(img_dir, self)
+        # 新加入的代码 By Clay
+        new_dir = os.path.join(app_path, 'resource', 'images', 'pixel.png')
+        card.imgWidget.setImg(new_dir)
+        
         card.clicked.connect(self.setSelectedImg)
         self.cards.append(card)
         self.dirs.append(img_dir)
@@ -444,7 +452,7 @@ class ImgWidget(QWidget):
             return img
         elif isinstance(img, str):
             pixmap = QPixmap(img)
-            pixmap = pixmap.scaled(28, 28, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            pixmap = pixmap.scaled(QRectF(self.rect()).toRect().size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             return QIcon(pixmap)
         else:
             raise TypeError("img must be QIcon or str")

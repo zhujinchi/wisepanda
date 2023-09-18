@@ -15,16 +15,14 @@ class ScoreCalculator:
         vector_texture_bottom = zero_array
         app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         vector_model = torch.load(os.path.join(app_path, 'model/model_of_best'))
-        if direction == 'top':
+        if direction == 'bottom':
+            #源图片是上半截区的
             vector_edge_top = np.array(ScoreCalculator._get_edge(src_image, 'top'))
             scores_bottom_edge = []
             for dir_aim in dir_list:
                 extractor = NotchExtractor(dir_aim)
                 notch_bottom = extractor.extract_bottom()
-                vector_edge_bottom = np.array(ScoreCalculator._get_edge(notch_bottom, 'top'))
-
-                vector_edge_top = zero_array
-                vector_edge_bottom = zero_array
+                vector_edge_bottom = np.array(ScoreCalculator._get_edge(notch_bottom, 'bottom'))
                 
                 data_list = [vector_texture_top, vector_texture_bottom, vector_edge_top, vector_edge_bottom]
                 input_data = np.array(data_list)
@@ -41,15 +39,13 @@ class ScoreCalculator:
                 return scores_bottom_edge
 
         else:
+            #源片是上半截区的
             vector_edge_bottom = np.array(ScoreCalculator._get_edge(src_image, 'bottom'))
             scores_top_edge = []
             for dir_aim in dir_list:
                 extractor = NotchExtractor(dir_aim)
                 notch_top = extractor.extract_top()
-                vector_edge_top = np.array(ScoreCalculator._get_edge(notch_top, 'bottom'))
-
-                vector_edge_top = zero_array
-                vector_edge_bottom = zero_array
+                vector_edge_top = np.array(ScoreCalculator._get_edge(notch_top, 'top'))
 
                 data_list = [vector_texture_top, vector_texture_bottom, vector_edge_top, vector_edge_bottom]
                 input_data = np.array(data_list)
@@ -64,7 +60,7 @@ class ScoreCalculator:
 
     @staticmethod
     def _get_edge(src_image, direction):
-        # print(src_image.shape)
+        print(src_image)
         gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
         # print(gray_image.shape)
         crop_size = (64,int((gray_image.shape[0]*64)/gray_image.shape[1]))
@@ -88,4 +84,4 @@ class ScoreCalculator:
             symbol_sum = 0
             symbol_vector = [item - min(symbol_vector) for item in symbol_vector]
             # print(symbol_vector)
-            return symbol_vector
+        return symbol_vector

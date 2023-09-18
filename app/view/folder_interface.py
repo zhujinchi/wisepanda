@@ -60,6 +60,17 @@ class FolderInterface(ScrollArea):
             self.modelGroup
         )
 
+        # calculate
+        self.calculator = SettingCardGroup(
+            self.tr("运算"), self.scrollWidget)  
+        self.addcalculateCard = PushSettingCard(
+            self.tr('开始计算'),
+            FIF.ADD,
+            self.tr('计算'),
+            '',
+            self.calculator
+        )
+
         self.__initWidget()
 
     def __initWidget(self):
@@ -87,12 +98,14 @@ class FolderInterface(ScrollArea):
         self.slipInThisPCGroup.addSettingCard(self.downloadFolderCard)
 
         self.modelGroup.addSettingCard(self.addmodelCard)
+        self.calculator.addSettingCard(self.addcalculateCard)
 
         # add setting card group to layout
         self.expandLayout.setSpacing(28)
         self.expandLayout.setContentsMargins(36, 10, 36, 0)
         self.expandLayout.addWidget(self.slipInThisPCGroup)
         self.expandLayout.addWidget(self.modelGroup)
+        self.expandLayout.addWidget(self.calculator)
 
     def __onDownloadFolderCardClicked(self):
         """ download folder card clicked slot """
@@ -117,6 +130,10 @@ class FolderInterface(ScrollArea):
             file_name = file_dialog.selectedFiles()[0]
             self.addmodelCard.setContent(file_name)
 
+    def __onAddCalculateCardClicked(self):
+        print('hello world')
+        
+
 
     def __connectSignalToSlot(self):
         """ connect signal to slot """
@@ -129,4 +146,7 @@ class FolderInterface(ScrollArea):
             self.__onDownloadFolderCardClicked)
         self.addmodelCard.clicked.connect(
             self.__onAddModelCardClicked
+        )
+        self.addcalculateCard.clicked.connect(
+            self.__onAddCalculateCardClicked
         )
