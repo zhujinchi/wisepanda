@@ -1,13 +1,17 @@
+import os
 from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, FolderListSettingCard,
                             OptionsSettingCard, PushSettingCard,
                             HyperlinkCard, PrimaryPushSettingCard, ScrollArea,
                             ComboBoxSettingCard, ExpandLayout, Theme, CustomColorSettingCard,
                             setTheme, setThemeColor, RangeSettingCard, isDarkTheme)
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import InfoBar
+from qfluentwidgets import InfoBar, InfoBar, InfoBarPosition
 from PyQt6.QtCore import Qt, pyqtSignal, QUrl, QStandardPaths
 from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWidgets import QWidget, QLabel, QFileDialog
+
+from app.common.img_data import ImageData
+from app.common.singleton_imgData_list import Singleton_imgData_list
 
 from ..common.config import cfg
 from ..common.style_sheet import StyleSheet
@@ -30,6 +34,7 @@ class FolderInterface(ScrollArea):
         self.settingLabel = QLabel(self.tr("项目文件管理"), self)
 
         self.singleton_instance = Singleton_dir()
+        self.img_data_instance = Singleton_imgData_list()
      
 
         # folders
@@ -60,6 +65,8 @@ class FolderInterface(ScrollArea):
             self.modelGroup
         )
 
+        self.calculateData = ' '
+
         # calculate
         self.calculator = SettingCardGroup(
             self.tr("运算"), self.scrollWidget)  
@@ -67,7 +74,7 @@ class FolderInterface(ScrollArea):
             self.tr('开始计算'),
             FIF.ADD,
             self.tr('计算'),
-            '',
+            self.calculateData,
             self.calculator
         )
 
@@ -131,7 +138,35 @@ class FolderInterface(ScrollArea):
             self.addmodelCard.setContent(file_name)
 
     def __onAddCalculateCardClicked(self):
-        print('hello world')
+        """ 
+        input: dir 
+        save: a list
+        1. 先获得文件地址filelist
+        2. 每个文件获得上截区和下截区的特征，并保存
+        """
+        dir =  cfg.get(cfg.downloadFolder)
+        # 获取所有图片地址
+        fileList = self.getImgList(dir)
+        total_num = len(fileList)
+        for i, filedir in enumerate(fileList):
+            print((i+1)/total_num)
+            self.calculateData = '进度：' + str(round(((i+1)/total_num)*100,2)) + '%'
+            self.addcalculateCard.setContent(self.calculateData)
+            image_data = ImageData(filedir, fileList)
+            self.img_data_instance.add_imgData_element(image_data)
+
+
+
+    def getImgList(self, dirs, ext='png'):
+        fileList = []
+        for file in os.listdir(dirs):
+            if os.path.isdir(os.path.join(dirs, file)):
+                self.getImgList(os.path.join(dirs, file))
+            elif os.path.isfile(os.path.join(dirs, file)) and file.split('.')[-1] == ext:
+                fileList.append(os.path.join(dirs, file))
+            else:
+                continue
+        return fileList
         
 
 

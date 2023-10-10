@@ -11,6 +11,7 @@ class Singleton_dir(QObject):
             cls._instance.workspace_dir = ""
         return cls._instance
 
+    # 全局的目录地址
     def set_dir(self, value):
         self.workspace_dir = value
         self.dir_changed.emit(value)

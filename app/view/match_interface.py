@@ -291,7 +291,7 @@ class ImageWidget(QWidget):
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
-                duration=3000,    # won't disappear automatically
+                duration=1000,    # won't disappear automatically
                 parent=self
             )
                 
@@ -308,7 +308,7 @@ class ImageWidget(QWidget):
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
-                duration=3000,    # won't disappear automatically
+                duration=1000,    # won't disappear automatically
                 parent=self
             )
 

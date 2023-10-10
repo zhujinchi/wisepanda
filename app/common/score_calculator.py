@@ -60,7 +60,6 @@ class ScoreCalculator:
 
     @staticmethod
     def _get_edge(src_image, direction):
-        print(src_image)
         gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
         # print(gray_image.shape)
         crop_size = (64,int((gray_image.shape[0]*64)/gray_image.shape[1]))

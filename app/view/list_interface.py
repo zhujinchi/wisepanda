@@ -11,6 +11,8 @@ from PyQt6.QtGui import QIcon, QPainter, QPixmap, QImage
 from qfluentwidgets import (SubtitleLabel, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon, IconWidget, Theme, PushButton, PushButton, InfoBar, InfoBarPosition)
 from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QSizePolicy
 
+from app.common.singleton_imgData_list import Singleton_imgData_list
+
 from .gallery_interface import GalleryInterface
 from ..common.config import cfg
 from ..common.trie import Trie
@@ -196,9 +198,14 @@ class ImageInfoPanel(QFrame):
 
         self.img_changer = Singleton_img()
         self.singleton_instance = Singleton_result()
+        self.img_data_instance = Singleton_imgData_list()
+
         self.file_list = []
         self.top, self.bottom = None, None
         parent.filelistChanged.connect(self.onFileListChanged)
+
+        # 初始选择的图片
+        self.choose_img = ''
 
         self.imageInfoLabel = StrongBodyLabel(self)
         self.imageInfoLabel.setContentsMargins(8, 0, 0, 0)
@@ -276,13 +283,18 @@ class ImageInfoPanel(QFrame):
 
     def onFileListChanged(self, filelist):
         self.file_list = filelist
+        self.choose_img = filelist[0]
+
 
     def getResultList(self, direction):
-        QCoreApplication.processEvents()
+        dir = self.choose_img
+        print(dir)
         if direction == 'top':
-            result_list = ScoreCalculator.get_score('bottom', self.top, self.file_list)
+            imgData = self.img_data_instance._instance.get_result_with_name(dir)
+            result_list = imgData.get_top_edge_match_list()
         else:
-            result_list = ScoreCalculator.get_score('top', self.bottom, self.file_list)
+            imgData = self.img_data_instance._instance.get_result_with_name(dir)
+            result_list = imgData.get_bottom_edge_match_list()
 
         # 修改单例文件地址
         self.singleton_instance._instance.set_result_list(result_list)
@@ -300,6 +312,8 @@ class ImageInfoPanel(QFrame):
         name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
         self.originalImage.setImg(img_dir)
         self.img_changer._instance.set_dir(img_dir)
+
+        self.choose_img = img_dir
 
         notch_extractor = NotchExtractor(img_dir)
         self.top, self.bottom = notch_extractor.extract_top(), notch_extractor.extract_bottom()
@@ -411,7 +425,7 @@ class PreviewCard(QFrame):
             return
         self.isSelected = isSelected
         
-        self.imgWidget.setImg(self.dir)
+        #self.imgWidget.setImg(self.dir)
         self.setProperty('isSelected', isSelected)
         self.setStyle(QApplication.style())
 
