@@ -1,4 +1,7 @@
 import os
+import numpy as np
+import cv2
+import torch
 from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, FolderListSettingCard,
                             OptionsSettingCard, PushSettingCard,
                             HyperlinkCard, PrimaryPushSettingCard, ScrollArea,
@@ -35,8 +38,11 @@ class FolderInterface(ScrollArea):
 
         self.singleton_instance = Singleton_dir()
         self.img_data_instance = Singleton_imgData_list()
-     
 
+        # 竹帛计算model
+        app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.vector_model = torch.load(os.path.join(app_path, 'model/model_of_best'))
+     
         # folders
         self.slipInThisPCGroup = SettingCardGroup(
             self.tr("文件&项目"), self.scrollWidget)
@@ -144,18 +150,74 @@ class FolderInterface(ScrollArea):
         1. 先获得文件地址filelist
         2. 每个文件获得上截区和下截区的特征，并保存
         """
+        top_edge_list = []
+        bottom_edge_list = []
         dir =  cfg.get(cfg.downloadFolder)
         # 获取所有图片地址
         fileList = self.getImgList(dir)
         total_num = len(fileList)
         for i, filedir in enumerate(fileList):
             print((i+1)/total_num)
-            self.calculateData = '进度：' + str(round(((i+1)/total_num)*100,2)) + '%'
-            self.addcalculateCard.setContent(self.calculateData)
-            image_data = ImageData(filedir, fileList)
+            # self.calculateData = '进度：' + str(round(((i+1)/total_num)*100,2)) + '%'
+            # self.addcalculateCard.setContent(self.calculateData)
+            # image_data = ImageData(filedir, fileList)
+            # self.img_data_instance.add_imgData_element(image_data)
+
+            # 数组保存上下截取区的特征
+            top_edge_list.append(filedir.get_top_edge_match_list()) #修改成新的截取算法
+            bottom_edge_list.append(filedir.get_bottom_edge_match_list())
+        # 计算上下两两特征的分数，并保存
+        score_list = []
+        for i in top_edge_list:
+            for j in bottom_edge_list:
+                # 计算分数
+                score_list.append(self.getScore(i, j)) #计算分数的
+        
+        # 现在得到的是一个长列表，假如你的total_num是100，那么这个列表的长度就是10000，这时如果你100，100这样取样，那你会得到bottom_edge_match_list(按照fileList文件名索引)
+        # 但是如果你每隔100取样，你就会得到bottom_edge_match_list(按照fileList文件名索引)：：[1::100]
+        for i, filedir in enumerate(fileList):
+            bottom_edge_list = score_list[i::total_num]
+            top_edge_list = score_list[i*total_num:(i+1)*total_num]
+
+            top_edge_match_list, bottom_edge_match_list = self.getEdgeListWithFiledirList(top_edge_list, bottom_edge_list, fileList)
+            image_data = ImageData(filedir, fileList, top_edge_match_list, bottom_edge_match_list)
             self.img_data_instance.add_imgData_element(image_data)
 
 
+
+    # 计算分数的方法
+    def getScore(self, direction, top_vector, bottom_vector):
+        zero_array = np.zeros(64)
+        vector_texture_top = zero_array
+        vector_texture_bottom = zero_array
+        model = self.vector_model
+       
+        data_list = [vector_texture_top, vector_texture_bottom, top_vector, bottom_vector]
+        input_data = np.array(data_list)
+        pred_data = input_data.astype(np.float32)
+        
+        model.eval()
+        y_pred = model(torch.tensor(pred_data))
+        score = round(y_pred.item(), 4)
+            
+        return score
+
+    # 获取某一个地址图片列表顺序的，这里应该去除掉自己本身的匹配，但我没有写，因为一趟遍历会造成加时。
+    def getEdgeListWithFiledirList(top_list, bottom_list, filedir_list):
+        top_temp_list = []
+        bottom_temp_list = []
+        for i in range(filedir_list):
+            top_temp_list.append(top_list[i], filedir_list[i])
+            bottom_temp_list.append(bottom_list[i], filedir_list[i])
+            
+        top_temp_list.sort(key=lambda x: x[0], reverse=True)
+        bottom_temp_list.sort(key=lambda x: x[0], reverse=True)
+
+        if len(filedir_list) > 50:
+            return top_temp_list[:50], bottom_temp_list[:50]
+        else:
+            return top_temp_list, bottom_temp_list
+        
 
     def getImgList(self, dirs, ext='png'):
         fileList = []
