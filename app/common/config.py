@@ -53,7 +53,7 @@ class Config(QConfig):
 
 YEAR = 2023
 AUTHOR = "Angzeng"
-VERSION = __version__
+VERSION = "1.0.0"
 
 cfg = Config()
 qconfig.load('app/config/config.json', cfg)
