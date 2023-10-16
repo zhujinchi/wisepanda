@@ -2,6 +2,7 @@ import os
 import numpy as np
 import cv2
 import torch
+import time
 from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, FolderListSettingCard,
                             OptionsSettingCard, PushSettingCard,
                             HyperlinkCard, PrimaryPushSettingCard, ScrollArea,
@@ -150,14 +151,21 @@ class FolderInterface(ScrollArea):
         1. 先获得文件地址filelist
         2. 每个文件获得上截区和下截区的特征，并保存
         """
+        now = int(round(time.time()*1000))
         top_vector_list = []
         bottom_vector_list = []
         dir =  cfg.get(cfg.downloadFolder)
         # 获取所有图片地址
         fileList = self.getImgList(dir)
         total_num = len(fileList)
+
+        print(total_num)
+        now02 = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(now/1000))
+        print(now02)
+
         for i, filedir in enumerate(fileList):
-            print((i+1)/total_num)
+            # print((i+1)/total_num)
+            
             # self.calculateData = '进度：' + str(round(((i+1)/total_num)*100,2)) + '%'
             # self.addcalculateCard.setContent(self.calculateData)
             # image_data = ImageData(filedir, fileList)
@@ -165,7 +173,12 @@ class FolderInterface(ScrollArea):
 
             # 数组保存上下截取区的特征
             top_vector_list.append(self.getVector(filedir, 'top')) #修改成新的截取算法
-            bottom_vector_list.append(self.getVector(filedir, 'bottom')) 
+            bottom_vector_list.append(self.getVector(filedir, 'bottom')) #做测试
+
+        now22 = int(round(time.time()*1000))
+        now032 = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(now22/1000))
+        print('计算vector耗时'+now032)
+
         # 计算上下两两特征的分数，并保存
         score_list = []
         for i in top_vector_list:
@@ -183,13 +196,19 @@ class FolderInterface(ScrollArea):
             image_data = ImageData(filedir, top_edge_match_list, bottom_edge_match_list)
             self.img_data_instance.add_imgData_element(image_data)
 
+        now2 = int(round(time.time()*1000))
+        now03 = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(now2/1000))
+        print(now03)
+
     # 给定list，计算上下截区特征
     def getVector(self, src_dir, direction):
-        try:
             src_img = cv2.imread(src_dir)
+        #     print(src_img.shape)
             gray_img = cv2.cvtColor(src_img, cv2.COLOR_BGR2GRAY)
             height, width = gray_img.shape[0], gray_img.shape[1]
             norm_img = cv2.normalize(255-gray_img, None, 0, 1.0, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+            
+        #     print(norm_img[:10])
             
             row_counts = [0]*height
             count = 0
@@ -208,69 +227,72 @@ class FolderInterface(ScrollArea):
         #     count_vector = np.delete(counts, [:2])
             # 直接去掉非0的1 和 2 , 他们算作微小扰动
             symbol_vector = [i if i > 2 else 0 for i in symbol_vector]
-    
-            if direction == "top":
-                top_mark = [0, height//2]
-                for i in range(height//2):
-                    if symbol_vector[i] > 0:
-                        top_mark[0] = i
-                        break
-                for i in range(height//2, 0, -1):
-                    if symbol_vector[i] > 0:
-                        top_mark[1] = i
-                        break
-            else:
-                bottom_mark = [height//2, height-1]
-                for i in range(height-1, height//2, -1):
-                    if symbol_vector[i] > 0:
-                        bottom_mark[1] = i
-                        break
-                for i in range(height//2, height):
-                    if symbol_vector[i] > 0:
-                        bottom_mark[0] = i
-                        break
-
-            # 处理上下边界相等导致的图片无效问题
-            #     min_gap = 3
-            if direction == "top":
-                if (top_mark[1]-top_mark[0])*64 < width:
+            
+            symbol_vector.append(symbol_vector[-1])
+            
+            try:
+                if direction == "top":
                     top_mark = [0, height//2]
-                notch_img = src_img[top_mark[0]: top_mark[1], :, :]
-            else:
-                if (bottom_mark[1]-bottom_mark[0])*64 < width:
+                    for i in range(height//2):
+                        if symbol_vector[i] > 0:
+                            top_mark[0] = i
+                            break
+                    for i in range(height//2, 0, -1):
+                        if symbol_vector[i] > 0:
+                            top_mark[1] = i
+                            break
+                else:
                     bottom_mark = [height//2, height-1]
-                notch_img = src_img[bottom_mark[0]: bottom_mark[1], :, :]
-                
-         
+                    for i in range(height-1, height//2, -1):
+                        if symbol_vector[i] > 0:
+                            bottom_mark[1] = i
+                            break
+                    for i in range(height//2, height):
+                        if symbol_vector[i] > 0:
+                            bottom_mark[0] = i
+                            break
 
-            gray_img = cv2.cvtColor(notch_img, cv2.COLOR_BGR2GRAY)
-       
+                # 处理上下边界相等导致的图片无效问题
+                #     min_gap = 3
+                if direction == "top":
+                    if (top_mark[1]-top_mark[0])*64 < width:
+                        top_mark = [0, height//2]
+                    notch_img = src_img[top_mark[0]: top_mark[1], :, :]
+                else:
+                    if (bottom_mark[1]-bottom_mark[0])*64 < width:
+                        bottom_mark = [height//2, height-1]
+                    notch_img = src_img[bottom_mark[0]: bottom_mark[1], :, :]
+                    
+        #         print(notch_img.shape)
 
-            crop_size = (64, int(gray_img.shape[0]*64/gray_img.shape[1]))
-       
-            cropped_img = cv2.resize(gray_img, crop_size, interpolation=cv2.INTER_AREA)
-   
+                gray_img = cv2.cvtColor(notch_img, cv2.COLOR_BGR2GRAY)
+        #         print(gray_img.shape)
 
-            height, width = cropped_img.shape[0], cropped_img.shape[1]
-            symbol_vector = []
-            symbol_sum = 0
+                crop_size = (64, int(gray_img.shape[0]*64/gray_img.shape[1]))
+        #         print(crop_size)
+                cropped_img = cv2.resize(gray_img, crop_size, interpolation=cv2.INTER_AREA)
+        #         print(cropped_img.shape)
 
-            for c in range(width):
-                for r in range(height):
-                    if direction == "top":
-                        if cropped_img[r][c] < 230:
-                            symbol_sum += 1
-                    else:
-                        if cropped_img[r][c] >= 230:
-                            symbol_sum += 1
-                symbol_vector.append(symbol_sum)
+                height, width = cropped_img.shape[0], cropped_img.shape[1]
+                symbol_vector = []
                 symbol_sum = 0
-            symbol_vector = [item - min(symbol_vector) for item in symbol_vector]
-    
-        except:
-            symbol_vector = [0]*64
 
-        return symbol_vector
+                for c in range(width):
+                    for r in range(height):
+                        if direction == "top":
+                            if cropped_img[r][c] < 230:
+                                symbol_sum += 1
+                        else:
+                            if cropped_img[r][c] >= 230:
+                                symbol_sum += 1
+                    symbol_vector.append(symbol_sum)
+                    symbol_sum = 0
+                symbol_vector = [item - min(symbol_vector) for item in symbol_vector]
+        #         print(symbol_vector)
+            except:
+                symbol_vector = [0]*64
+
+            return symbol_vector
 
 
     # 计算分数的方法
@@ -287,7 +309,6 @@ class FolderInterface(ScrollArea):
         model.eval()
         y_pred = model(torch.tensor(pred_data))
         score = round(y_pred.item(), 4)
-        print(score)
         return score
 
     # 获取某一个地址图片列表顺序的，这里应该去除掉自己本身的匹配，但我没有写，因为一趟遍历会造成加时。
@@ -306,7 +327,6 @@ class FolderInterface(ScrollArea):
         else:
             return top_temp_list, bottom_temp_list
         
-
     def getImgList(self, dirs, ext='png'):
         fileList = []
         for file in os.listdir(dirs):
@@ -317,6 +337,17 @@ class FolderInterface(ScrollArea):
             else:
                 continue
         return fileList
+    
+    # def getImgList(dirs, ext='png'):
+    #     fileList = []
+    #     for file in os.listdir(dirs):
+    #         if os.path.isdir(os.path.join(dirs, file)):
+    #             getImgList(os.path.join(dirs, file), fileList)
+    #         elif os.path.isfile(os.path.join(dirs, file)) and file.split('.')[-1] == "png":
+    #             fileList.append(os.path.join(dirs, file))
+    #         else:
+    #             continue
+    #     return fileList
         
 
 
