@@ -285,15 +285,15 @@ class ImageWidget(QWidget):
                 self.original_pixmap1 = QPixmap(file_name)  # 存储原始加载的图片
                 self.image_label1.setPixmap(self.original_pixmap1)
                 self.image_label1.setFixedSize(self.original_pixmap1.size())  # 设置image_label1的大小与图片大小一致
-                InfoBar.success(
-                title='提示消息',
-                content="图片1加载成功。",
-                orient=Qt.Orientation.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.BOTTOM_RIGHT,
-                duration=1000,    # won't disappear automatically
-                parent=self
-            )
+            #     InfoBar.success(
+            #     title='提示消息',
+            #     content="图片1加载成功。",
+            #     orient=Qt.Orientation.Horizontal,
+            #     isClosable=True,
+            #     position=InfoBarPosition.BOTTOM_RIGHT,
+            #     duration=1000,    # won't disappear automatically
+            #     parent=self
+            # )
                 
     def chooseImage1(self, file_name):
             print(file_name)

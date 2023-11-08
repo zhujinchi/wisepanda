@@ -141,17 +141,31 @@ class IconCardView(QWidget):
         self.flowLayout.update()
 
 
-    def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext='png'):
+    def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext=['png', 'jpg', 'jpeg', 'gif', 'bmp']):
         fileList = []
         for file in os.listdir(dirs):
             if os.path.isdir(os.path.join(dirs, file)):
                 self.getImgList(os.path.join(dirs, file))
-            elif os.path.isfile(os.path.join(dirs, file)) and file.split('.')[-1] == ext:
+            elif os.path.isfile(os.path.join(dirs, file)) and file.split('.')[-1] in ext:
                 fileList.append(os.path.join(dirs, file))
             else:
                 continue
         self.filelistChanged.emit(fileList)
         return fileList
+    
+    # def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext=[ 'png', 'jpg', 'tiff']):
+    #     fileList =[]
+    #     for file in os.listdir(dirs):
+    #         if os.path.isdir(os.path.join(dirs,file)):
+    #             # Recursively call getImgList if the file is a directory
+    #             self.getImgList(os.path.join(dirs,file))
+    #         elif os.path.isfile(os.path.join(dirs,file)) and file.split('.')[-1] == ext:
+    #             # Check if the file extension is in the list of supported extensions
+    #             fileList.append(os.path.join(dirs,file))
+    #         else:
+    #             continue
+    #     self.filelistChanged.emit(fileList)
+    #     return fileList
     
     def updateImgList(self):
         self.dirs = []
@@ -283,7 +297,7 @@ class ImageInfoPanel(QFrame):
 
     def onFileListChanged(self, filelist):
         self.file_list = filelist
-        self.choose_img = filelist[0]
+        #self.choose_img = filelist[0]
 
 
     def getResultList(self, direction):
@@ -296,20 +310,19 @@ class ImageInfoPanel(QFrame):
             else:
                 imgData = self.img_data_instance._instance.get_result_with_name(dir)
                 result_list = imgData.get_bottom_edge_match_list()
+            # 修改单例文件地址
+            self.singleton_instance._instance.set_result_list(result_list)
+            InfoBar.success(
+                title=self.tr('计算完成'),
+                content=self.tr("匹配结果计算完毕"),
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM_RIGHT,
+                duration=16000,
+                parent=self
+            )
         except:
             pass
-
-        # 修改单例文件地址
-        self.singleton_instance._instance.set_result_list(result_list)
-        InfoBar.success(
-            title=self.tr('计算完成'),
-            content=self.tr("匹配结果计算完毕"),
-            orient=Qt.Orientation.Horizontal,
-            isClosable=True,
-            position=InfoBarPosition.BOTTOM_RIGHT,
-            duration=16000,
-            parent=self
-        )
 
     def setImage(self, img_dir):
         name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]

@@ -327,26 +327,30 @@ class FolderInterface(ScrollArea):
         else:
             return top_temp_list, bottom_temp_list
         
-    def getImgList(self, dirs, ext='png'):
+    def getImgList(self, dirs, ext=['png', 'jpg', 'jpeg', 'gif', 'bmp']):
         fileList = []
         for file in os.listdir(dirs):
             if os.path.isdir(os.path.join(dirs, file)):
                 self.getImgList(os.path.join(dirs, file))
-            elif os.path.isfile(os.path.join(dirs, file)) and file.split('.')[-1] == ext:
+            elif os.path.isfile(os.path.join(dirs, file)) and file.split('.')[-1] in ext:
                 fileList.append(os.path.join(dirs, file))
             else:
                 continue
         return fileList
     
-    # def getImgList(dirs, ext='png'):
-    #     fileList = []
+    # def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext=[ 'png', 'jpg', 'tiff']):
+    #     fileList =[]
     #     for file in os.listdir(dirs):
-    #         if os.path.isdir(os.path.join(dirs, file)):
-    #             getImgList(os.path.join(dirs, file), fileList)
-    #         elif os.path.isfile(os.path.join(dirs, file)) and file.split('.')[-1] == "png":
-    #             fileList.append(os.path.join(dirs, file))
+    #         if os.path.isdir(os.path.join(dirs,file)):
+    #             # Recursively call getImgList if the file is a directory
+    #             self.getImgList(os.path.join(dirs,file))
+    #         elif os.path.isfile(os.path.join(dirs,file)):
+    #             # Check if the file extension is in the list of supported extensions
+    #             if file.split('.')[-1].lower() in ext:
+    #                 fileList.append(os.path.join(dirs,file))
     #         else:
     #             continue
+    #     self.filelistChanged.emit(fileList)
     #     return fileList
         
 

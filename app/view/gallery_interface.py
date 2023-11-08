@@ -120,7 +120,7 @@ class ExampleCard(QWidget):
 
     def eventFilter(self, obj, e):
         if obj is self.sourceWidget:
-            if e.type() == QEvent.Type.MouseButtonRelease:
+            if e.type() == QEvent.Type.MouseButtonRelease: 
                 QDesktopServices.openUrl(QUrl(self.sourcePath))
 
         return super().eventFilter(obj, e)
