@@ -141,7 +141,7 @@ class IconCardView(QWidget):
         self.flowLayout.update()
 
 
-    def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext=['png', 'jpg', 'jpeg', 'gif', 'bmp']):
+    def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext=['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tif']):
         fileList = []
         for file in os.listdir(dirs):
             if os.path.isdir(os.path.join(dirs, file)):
@@ -297,7 +297,7 @@ class ImageInfoPanel(QFrame):
 
     def onFileListChanged(self, filelist):
         self.file_list = filelist
-        #self.choose_img = filelist[0]
+        self.choose_img = filelist[0]
 
 
     def getResultList(self, direction):
@@ -325,23 +325,26 @@ class ImageInfoPanel(QFrame):
             pass
 
     def setImage(self, img_dir):
-        name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
-        self.originalImage.setImg(img_dir)
-        self.img_changer._instance.set_dir(img_dir)
+        try:
+            name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
+            self.originalImage.setImg(img_dir)
+            self.img_changer._instance.set_dir(img_dir)
 
-        self.choose_img = img_dir
+            self.choose_img = img_dir
 
-        notch_extractor = NotchExtractor(img_dir)
-        self.top, self.bottom = notch_extractor.extract_top(), notch_extractor.extract_bottom()
-        # print(type(top), type(bottom))
-        crop_size_top = (64,int((self.top.shape[0]*64)/self.top.shape[1]))
-        crop_size_bottom = (64,int((self.bottom.shape[0]*64)/self.bottom.shape[1]))
-        top = cv2.resize(self.top, crop_size_top, interpolation=cv2.INTER_AREA)
-        bottom = cv2.resize(self.bottom, crop_size_bottom, interpolation=cv2.INTER_AREA)
-        self.imageTop.setImg(self.arrayToQIcon(top))
-        self.imageBottom.setImg(self.arrayToQIcon(bottom))
+            notch_extractor = NotchExtractor(img_dir)
+            self.top, self.bottom = notch_extractor.extract_top(), notch_extractor.extract_bottom()
+            # print(type(top), type(bottom))
+            crop_size_top = (64,int((self.top.shape[0]*64)/self.top.shape[1]))
+            crop_size_bottom = (64,int((self.bottom.shape[0]*64)/self.bottom.shape[1]))
+            top = cv2.resize(self.top, crop_size_top, interpolation=cv2.INTER_AREA)
+            bottom = cv2.resize(self.bottom, crop_size_bottom, interpolation=cv2.INTER_AREA)
+            self.imageTop.setImg(self.arrayToQIcon(top))
+            self.imageBottom.setImg(self.arrayToQIcon(bottom))
 
-        self.imageInfoLabel.setText("文件名："+ name)
+            self.imageInfoLabel.setText("文件名："+ name)
+        except:
+            pass
     
     def arrayToQIcon(self, ndarray):
         if isinstance(ndarray, np.ndarray):

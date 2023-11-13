@@ -327,7 +327,7 @@ class FolderInterface(ScrollArea):
         else:
             return top_temp_list, bottom_temp_list
         
-    def getImgList(self, dirs, ext=['png', 'jpg', 'jpeg', 'gif', 'bmp']):
+    def getImgList(self, dirs, ext=['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tif']):
         fileList = []
         for file in os.listdir(dirs):
             if os.path.isdir(os.path.join(dirs, file)):
