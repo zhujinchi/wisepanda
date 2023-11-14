@@ -297,7 +297,8 @@ class ImageInfoPanel(QFrame):
 
     def onFileListChanged(self, filelist):
         self.file_list = filelist
-        self.choose_img = filelist[0]
+        if len(filelist) > 0:
+            self.choose_img = filelist[0]
 
 
     def getResultList(self, direction):
