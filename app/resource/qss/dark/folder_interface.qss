@@ -1,0 +1,16 @@
+folderInterface, #scrollWidget {
+    background-color: transparent;
+}
+
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+
+/* 标签 */
+QLabel#folderLabel {
+    font: 33px 'Microsoft YaHei Light';
+    background-color: transparent;
+    color: white;
+}

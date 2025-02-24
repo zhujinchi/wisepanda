@@ -1,0 +1,46 @@
+listInterface, #scrollWidget {
+    background-color: transparent;
+}
+
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+/* 标签 */
+QLabel#listLabel {
+    font: 33px 'Microsoft YaHei Light';
+    background-color: transparent;
+}
+
+PreviewCard {
+    background-color: rgb(251, 251, 251);
+    border: 1px solid rgb(229, 229, 229);
+    border-radius: 6px;
+}
+
+PreviewCard > QLabel {
+    color: rgb(96, 96, 96);
+    font: 11px 'Segoe UI', 'PingFang SC';
+}
+
+PreviewCard[isSelected=true] {
+    background-color: --ThemeColorPrimary;
+}
+
+PreviewCard[isSelected=true] > QLabel {
+    color: white;
+}
+
+#scrollWidget, #preview {
+    background-color: rgb(243, 243, 243);
+}
+
+IconCardView {
+    background-color: transparent;
+}
+
+#preview {
+    border: 1px solid rgb(234, 234, 234);
+    border-radius: 10px;
+}

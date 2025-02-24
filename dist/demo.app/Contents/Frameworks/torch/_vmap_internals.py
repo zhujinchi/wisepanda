@@ -1,0 +1,5 @@
+XSym
+0040
+75967177b0f85d06334b702d38818f45
+../../Resources/torch/_vmap_internals.py
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

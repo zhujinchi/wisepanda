@@ -1,0 +1,136 @@
+/* label_interface.qss */
+
+/* 设置整体背景颜色 */
+QMainWindow {
+    background-color: transparent;
+}
+
+/* 设置 #scrollWidget 的背景透明 */
+#scrollWidget {
+    background-color: transparent;
+}
+
+/* QScrollArea 样式 */
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+/* 标签 QLabel#listLabel 的样式 */
+QLabel#listLabel {
+    font: 33px 'Microsoft YaHei Light';
+    background-color: transparent;
+    color: rgb(96, 96, 96); /* 确保文本颜色为浅色 */
+}
+
+/* PreviewCard 样式 */
+PreviewCard {
+    background-color: transparent;
+    border: 1px solid rgb(229, 229, 229);
+    border-radius: 6px;
+}
+
+/* PreviewCard 下的 QLabel 样式 */
+PreviewCard > QLabel {
+    color: rgb(96, 96, 96);
+    font: 11px 'Segoe UI', 'PingFang SC';
+}
+
+/* PreviewCard 被选中时的样式 */
+PreviewCard[isSelected=true] {
+    background-color: var(--ThemeColorPrimary); /* 使用 CSS 变量 */
+}
+
+/* PreviewCard 被选中时，其下的 QLabel 颜色变为白色 */
+PreviewCard[isSelected=true] > QLabel {
+    color: white;
+}
+
+/* #scrollWidget 和 #preview 的背景颜色 */
+#scrollWidget, #preview {
+    background-color: transparent;
+}
+
+/* IconCardView 的背景透明 */
+IconCardView {
+    background-color: transparent;
+}
+
+/* #preview 的边框和圆角 */
+#preview {
+    border: 1px solid rgb(234, 234, 234);
+    border-radius: 10px;
+}
+
+/* IconInfoPanel 的样式 */
+IconInfoPanel {
+    background-color: rgb(251, 251, 251);
+    border-left: 1px solid rgb(229, 229, 229);
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+/* IconInfoPanel 下的 #nameLabel 样式 */
+IconInfoPanel > #nameLabel {
+    font: 15px 'Segoe UI', 'PingFang SC';
+    font-weight: bold;
+    color: rgb(96, 96, 96);
+}
+
+/* IconInfoPanel 下的 #subTitleLabel 样式 */
+IconInfoPanel > #subTitleLabel {
+    font: 14px 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+    color: rgb(96, 96, 96);
+}
+
+/* IconInfoPanel 下的所有 QLabel 样式 */
+IconInfoPanel > QLabel {
+    font: 12px 'Segoe UI', 'PingFang SC';
+    color: rgb(96, 96, 96);
+}
+
+/* 通用按钮样式 */
+QPushButton {
+    background-color: rgb(240, 240, 240);
+    color: rgb(96, 96, 96);
+    font: 15px 'Segoe UI', 'PingFang SC';
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+/* QPushButton 悬停效果 */
+QPushButton:hover {
+    background-color: rgb(220, 220, 220);
+}
+
+/* QTextBrowser 样式 */
+QTextBrowser {
+    background-color: rgb(240, 240, 240);
+    color: rgb(96, 96, 96);
+    font: 15px 'Segoe UI', 'PingFang SC';
+    border: none;
+    border-radius: 4px;
+}
+
+/* QLineEdit 样式 */
+QLineEdit {
+    background-color: rgb(240, 240, 240);
+    color: rgb(96, 96, 96);
+    font: 15px 'Segoe UI', 'PingFang SC';
+    border: none;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+/* QRadioButton 样式 */
+QRadioButton {
+    color: rgb(96, 96, 96);
+    font: 15px 'Segoe UI', 'PingFang SC';
+}
+
+/* QRadioButton 选中时的样式 */
+QRadioButton::indicator:checked {
+    background-color: var(--ThemeColorPrimary);
+    border: none;
+}

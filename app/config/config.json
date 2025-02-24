@@ -1,0 +1,23 @@
+{
+    "Material": {
+        "AcrylicBlurRadius": 8
+    },
+    "Update": {
+        "CheckUpdateAtStartUp": true
+    },
+    "Folders": {
+        "Download": "D:/computer vision/zhujian/data/test_data",
+        "Model": "D:/Users/angzeng/Desktop/Fratcher 3",
+        "Slips": [
+            "D:/computer vision/zhujian/data/test_data"
+        ]
+    },
+    "MainWindow": {
+        "DpiScale": "Auto",
+        "Language": "Auto"
+    },
+    "QFluentWidgets": {
+        "ThemeColor": "#ff009faa",
+        "ThemeMode": "Dark"
+    }
+}
