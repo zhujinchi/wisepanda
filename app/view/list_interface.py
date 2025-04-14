@@ -83,7 +83,6 @@ class IconCardView(QWidget):
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.vBoxLayout.setSpacing(12)
         self.vBoxLayout.addWidget(self.iconLibraryLabel)
         self.vBoxLayout.addWidget(self.searchLineEdit)
         self.vBoxLayout.addWidget(self.view)
@@ -190,20 +189,6 @@ class IconCardView(QWidget):
         self.filelistChanged.emit(fileList)
         return fileList
     
-    # def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext=[ 'png', 'jpg', 'tiff']):
-    #     fileList =[]
-    #     for file in os.listdir(dirs):
-    #         if os.path.isdir(os.path.join(dirs,file)):
-    #             # Recursively call getImgList if the file is a directory
-    #             self.getImgList(os.path.join(dirs,file))
-    #         elif os.path.isfile(os.path.join(dirs,file)) and file.split('.')[-1] == ext:
-    #             # Check if the file extension is in the list of supported extensions
-    #             fileList.append(os.path.join(dirs,file))
-    #         else:
-    #             continue
-    #     self.filelistChanged.emit(fileList)
-    #     return fileList
-    
     def updateImgList(self):
         self.dirs = []
         self.cards = []
@@ -222,8 +207,7 @@ class IconCardView(QWidget):
         """ add icon to view """
         card = PreviewCard(img_dir, self)
         # 新加入的代码 By Clay
-        new_dir = os.path.join(app_path, 'resource', 'images', 'pixel.png')
-        card.imgWidget.setImg(new_dir)
+        card.imgWidget.setImg(img_dir)
         
         card.clicked.connect(self.setSelectedImg)
         self.cards.append(card)
@@ -323,9 +307,9 @@ class ImageInfoPanel(QFrame):
         self.vBoxLayout.addSpacing(5)
         self.vBoxLayout.addWidget(self.imageBottom, 0, Qt.AlignmentFlag.AlignHCenter)
 
-        self.originalImage.setFixedSize(96, 96)
-        self.imageTop.setFixedSize(96, 96)
-        self.imageBottom.setFixedSize(96, 96)
+        self.originalImage.setFixedSize(192, 192)
+        self.imageTop.setFixedSize(128, 128)
+        self.imageBottom.setFixedSize(128, 128)
         self.setFixedWidth(432)
 
         self.imageInfoLabel.setObjectName('imageInfoLabel')
@@ -410,11 +394,11 @@ class IconCard(QFrame):
         self.nameLabel = QLabel(self)
         self.vBoxLayout = QVBoxLayout(self)
 
-        self.setFixedSize(96, 96)
+        self.setFixedSize(192, 192)
         self.vBoxLayout.setSpacing(0)
         self.vBoxLayout.setContentsMargins(8, 28, 8, 0)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.iconWidget.setFixedSize(28, 28)
+        self.iconWidget.setFixedSize(56, 56)
         self.vBoxLayout.addWidget(self.iconWidget, 0, Qt.AlignmentFlag.AlignHCenter)
         self.vBoxLayout.addSpacing(14)
         self.vBoxLayout.addWidget(self.nameLabel, 0, Qt.AlignmentFlag.AlignHCenter)
@@ -454,15 +438,25 @@ class PreviewCard(QFrame):
         self.dir = img_dir
         self.isSelected = False
 
+
         self.imgWidget = ImgWidget(img_dir, self)
         self.nameLabel = QLabel(self)
         self.vBoxLayout = QVBoxLayout(self)
 
-        self.setFixedSize(96, 96)
+        self.imgWidget.setStyleSheet('''
+            QLabel {
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                padding: 2px;
+                background-color: white;
+            }
+        ''')
+
+        self.setFixedSize(192, 192)
         self.vBoxLayout.setSpacing(0)
         self.vBoxLayout.setContentsMargins(8, 28, 8, 0)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.imgWidget.setFixedSize(28, 28)
+        self.imgWidget.setFixedSize(128, 128)
         self.vBoxLayout.addWidget(self.imgWidget, 0, Qt.AlignmentFlag.AlignHCenter)
         self.vBoxLayout.addSpacing(14)
         self.vBoxLayout.addWidget(self.nameLabel, 0, Qt.AlignmentFlag.AlignHCenter)
