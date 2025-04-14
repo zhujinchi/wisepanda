@@ -307,9 +307,9 @@ class ImageInfoPanel(QFrame):
         self.vBoxLayout.addSpacing(5)
         self.vBoxLayout.addWidget(self.imageBottom, 0, Qt.AlignmentFlag.AlignHCenter)
 
-        self.originalImage.setFixedSize(192, 192)
-        self.imageTop.setFixedSize(128, 128)
-        self.imageBottom.setFixedSize(128, 128)
+        self.originalImage.setFixedSize(256, 256)
+        self.imageTop.setFixedSize(64, 64)
+        self.imageBottom.setFixedSize(64, 64)
         self.setFixedWidth(432)
 
         self.imageInfoLabel.setObjectName('imageInfoLabel')
@@ -348,7 +348,8 @@ class ImageInfoPanel(QFrame):
     def setImage(self, img_dir):
         try:
             name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
-            self.originalImage.setImg(img_dir)
+            processed_img=self.originalImage.processImg(img_dir)
+            self.originalImage.setImg(processed_img)
             self.img_changer._instance.set_dir(img_dir)
 
             self.choose_img = img_dir
@@ -491,7 +492,7 @@ class ImgWidget(QWidget):
     def _(self, img: QIcon, parent: QWidget = None):
         self.__init__(parent)
         self.setImg(img)
-    
+
     @__init__.register
     def _(self, img: str, parent: QWidget = None):
         self.__init__(parent)
@@ -499,7 +500,7 @@ class ImgWidget(QWidget):
 
     def getImg(self):
         return self.toQIcon(self._img)
-    
+
     def setImg(self, img: Union[str, QIcon]):
         self._img = img
         self.update()
@@ -520,7 +521,7 @@ class ImgWidget(QWidget):
             return QIcon(pixmap)
         else:
             raise TypeError("img must be QIcon or str")
-        
+
     def drawImg(self, img: Union[str, QIcon], painter: QPainter, rect, state=QIcon.State.Off):
         """ draw icon """
         if isinstance(img, QIcon):
@@ -532,6 +533,44 @@ class ImgWidget(QWidget):
             icon.paint(painter, QRectF(rect).toRect(), Qt.AlignmentFlag.AlignCenter, state=state)
         else:
             raise TypeError("img must be QIcon or str")
+
+    def processImg(self, img: Union[str, QIcon]):
+        """
+                将图像白色背景处理为透明，并转换为 QIcon
+                支持输入为文件路径、QPixmap、QImage、numpy array
+                """
+        if isinstance(img, QIcon):
+            return img
+
+        if isinstance(img, str):
+            image = QImage(img).convertToFormat(QImage.Format.Format_ARGB32)
+        elif isinstance(img, QPixmap):
+            image = img.toImage().convertToFormat(QImage.Format.Format_ARGB32)
+        elif isinstance(img, QImage):
+            image = img.convertToFormat(QImage.Format.Format_ARGB32)
+        elif isinstance(img, np.ndarray):
+            h, w, ch = img.shape
+            if ch == 3:
+                image = QImage(img.data, w, h, 3 * w, QImage.Format.Format_RGB888).convertToFormat(
+                    QImage.Format.Format_ARGB32)
+            elif ch == 4:
+                image = QImage(img.data, w, h, 4 * w, QImage.Format.Format_RGBA8888).convertToFormat(
+                    QImage.Format.Format_ARGB32)
+            else:
+                raise ValueError("Unsupported image shape")
+        else:
+            raise TypeError("Unsupported image type")
+
+        # 白色变透明
+        for y in range(image.height()):
+            for x in range(image.width()):
+                color = image.pixelColor(x, y)
+                if color.red() > 240 and color.green() > 240 and color.blue() > 240:
+                    color.setAlpha(0)
+                    image.setPixelColor(x, y, color)
+
+        pixmap = QPixmap.fromImage(image)
+        return QIcon(pixmap)
 
     img = pyqtProperty(QIcon, getImg, setImg)
 
