@@ -10,5 +10,6 @@ class Translator(QObject):
         self.list = self.tr('竹帛列表')
         self.match = self.tr('匹配项')
         self.output = self.tr('导出')
+        self.label = self.tr('标注')
         self.setting = self.tr('设置')
         

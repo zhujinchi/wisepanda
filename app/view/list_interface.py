@@ -8,7 +8,8 @@ from typing import List, Union
 
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtProperty, QRect, QRectF, QCoreApplication
 from PyQt6.QtGui import QIcon, QPainter, QPixmap, QImage
-from qfluentwidgets import (SubtitleLabel, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon, IconWidget, Theme, PushButton, PushButton, InfoBar, InfoBarPosition)
+from qfluentwidgets import (SubtitleLabel, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon,
+                            IconWidget, Theme, PushButton, PushButton, InfoBar, InfoBarPosition, HorizontalSeparator)
 from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QSizePolicy
 
 from app.common.singleton_imgData_list import Singleton_imgData_list
@@ -96,20 +97,56 @@ class IconCardView(QWidget):
 
         self.__initLayout()
         self.__connectSignalToSlot()
-    
+
     def __initLayout(self):
         self.searchLineEdit.setPlaceholderText(self.tr("搜索"))
         self.searchLineEdit.setFixedWidth(720)
-        # self.searchLineEdit.textChanged.connect(self.search)
 
-        self.hBoxLayout.setSpacing(0)
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.hBoxLayout.addWidget(self.scrollArea)
-        self.hBoxLayout.addWidget(self.infoPanel, 0, Qt.AlignmentFlag.AlignRight)
+        # 主视图布局（图像卡片列表 + 信息面板）
+        mainContentLayout = QHBoxLayout()
+        mainContentLayout.setSpacing(0)
+        mainContentLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.flowLayout.setVerticalSpacing(8)
-        self.flowLayout.setHorizontalSpacing(8)
-        self.flowLayout.setContentsMargins(8, 3, 8, 8)
+        # 左侧滚动区域（卡片）
+        self.scrollArea.setMinimumWidth(900)
+        self.scrollArea.setWidget(self.scrollWidget)
+        self.scrollArea.setViewportMargins(8, 8, 8, 8)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        # 设置流式布局的边距
+        self.flowLayout.setVerticalSpacing(10)
+        self.flowLayout.setHorizontalSpacing(10)
+        self.flowLayout.setContentsMargins(16, 8, 16, 8)
+
+        # 信息面板固定宽度，右对齐
+        self.infoPanel.setFixedWidth(432)
+
+        # 加入左右部分
+        mainContentLayout.addWidget(self.scrollArea)
+
+        # 可选：添加垂直分隔线
+        separator = QWidget()
+        separator.setFixedWidth(1)
+        separator.setStyleSheet("background-color: rgb(200, 200, 200);")
+        mainContentLayout.addWidget(separator)
+
+        mainContentLayout.addWidget(self.infoPanel, 0, Qt.AlignmentFlag.AlignRight)
+
+        # 外层垂直布局
+        self.vBoxLayout.setContentsMargins(16, 16, 16, 16)
+        self.vBoxLayout.setSpacing(12)
+        self.vBoxLayout.addWidget(self.iconLibraryLabel)
+        self.vBoxLayout.addSpacing(4)
+        self.vBoxLayout.addWidget(self.searchLineEdit, 0, Qt.AlignmentFlag.AlignLeft)
+        self.vBoxLayout.addSpacing(8)
+
+        # 分隔线（搜索栏下方）
+        self.vBoxLayout.addWidget(HorizontalSeparator(self))  # from qfluentwidgets
+        self.vBoxLayout.addSpacing(8)
+
+        # 添加主内容区（滚动+信息面板）
+        self.vBoxLayout.addLayout(mainContentLayout)
 
     def __connectSignalToSlot(self):
         self.searchLineEdit.clearSignal.connect(self.showAllImgs)
@@ -292,8 +329,7 @@ class ImageInfoPanel(QFrame):
         self.setFixedWidth(432)
 
         self.imageInfoLabel.setObjectName('imageInfoLabel')
-        self.setStyleSheet("background-color: rgb(43, 43, 43); border-left: 1px solid rgb(29, 29, 29); border-top-right-radius: 10px; border-bottom-right-radius: 10px;"
-                           "Qframe")
+
 
     def onFileListChanged(self, filelist):
         self.file_list = filelist

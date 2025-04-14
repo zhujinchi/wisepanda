@@ -3,7 +3,7 @@ import os
 import sys
 
 from PyQt6.QtCore import Qt, QTranslator
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtWidgets import QApplication
 from qfluentwidgets import FluentTranslator
 
@@ -31,6 +31,7 @@ galleryTranslator.load(locale, "gallery", ".", ":/gallery/i18n")
 # create main window
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon("app/resource/images/logo.png"))
     app.setAttribute(Qt.ApplicationAttribute.AA_DontCreateNativeWidgetSiblings)
     app.installTranslator(galleryTranslator)
     w = MainWindow()

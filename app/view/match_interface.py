@@ -4,8 +4,9 @@ import time
 from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve, QDateTime
 from PyQt6.QtWidgets import QScrollArea, QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QWidget, QSlider, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy, QFrame, QGraphicsOpacityEffect
 from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor
-from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectionScrollArea, SmoothScrollArea, ScrollArea, HollowHandleStyle, Slider, setTheme, Theme, PushButton, BodyLabel, IconWidget, TextWrap, FlowLayout
-
+from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectionScrollArea, SmoothScrollArea, \
+    ScrollArea, HollowHandleStyle, Slider, setTheme, Theme, PushButton, BodyLabel, IconWidget, TextWrap, FlowLayout, \
+    CardWidget
 
 from .gallery_interface import GalleryInterface
 from ..common.singleton_output import Singleton_output
@@ -21,13 +22,13 @@ class MatchInterface(GalleryInterface):
             parent=parent
             )
         self.setObjectName('matchInterface')
-       
+
         self.matchView = ImageWidget()
 
         self.vBoxLayout.addWidget(self.matchView)
-       
-        
-class ImageWidget(QWidget):
+
+
+class ImageWidget(CardWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -51,9 +52,8 @@ class ImageWidget(QWidget):
         self.layout = QVBoxLayout()
 
         # 上半区 列表区
-        self.top_widget = QWidget(self)
+        self.top_widget = CardWidget(self)
         self.top_layout = QVBoxLayout(self.top_widget)
-        self.top_widget.setStyleSheet("background-color: rgb(50, 50, 50); border: 0.3px solid rgb(29, 29, 29); border-radius: 5px;")
         self.top_widget.setFixedHeight(140)
 
         # 在 self.top_widget 上创建一个横向滚动的页面
@@ -62,7 +62,7 @@ class ImageWidget(QWidget):
         # scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)  # 显示水平滚动条
 
         # 创建一个容器 widget，作为滚动内容的容器
-        scroll_content = QWidget()
+        scroll_content = CardWidget()
         scroll_area.setWidget(scroll_content)
 
         # 创建一个水平布局来容纳子 widget
@@ -76,7 +76,7 @@ class ImageWidget(QWidget):
             child_widget =  SampleCard(self.image_list[1], 'score: 10.56', i, self)
             child_widget.clicked.connect(lambda: self.chooseImage2(self.image_list[1]))
             self.result_layout.addWidget(child_widget)
-        
+
         # 设置容器 widget 的布局
         scroll_content.setLayout(self.result_layout)
 
@@ -84,29 +84,27 @@ class ImageWidget(QWidget):
         self.top_layout.addWidget(scroll_area)
 
         # 下半区
-        self.bottom_widget = QWidget(self)
+        self.bottom_widget = CardWidget(self)
         self.bottom_layout = QHBoxLayout(self.bottom_widget)
-        self.bottom_widget.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29); border-radius: 5px;")
-        self.bottom_widget.setMinimumHeight(655) 
-       
+        self.bottom_widget.setMinimumHeight(655)
+
         # 下半区 控制区
-        self.control_widget = QWidget(self.bottom_widget) # 左区 控制区
-        self.control_widget.setStyleSheet("background-color: rgb(36, 36, 36); border: 0.4px solid rgb(36, 36, 36);border-radius: 5px;")  # 设置背景颜色
+        self.control_widget = CardWidget(self.bottom_widget) # 左区 控制区
         self.control_widget.setFixedWidth(240)  # 设置固定宽度
         self.control_widget.setMinimumHeight(630)
         # self.control_widget.setMaximumHeight(680)
 
         # 下半区 图片区
-        self.images_widget = QWidget(self.bottom_widget) # 右区 图片区
-        self.images_widget.setStyleSheet("background-color: transparent; border: 0px") 
-        
+        self.images_widget = CardWidget(self.bottom_widget) # 右区 图片区
+        self.images_widget.setStyleSheet("background-color: transparent; border: 0px")
+
         # 图片区组件群
         self.images_layout = QVBoxLayout()
 
         # 图片1
         self.image_label1 = QLabel(self)
         self.image_label1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label1.setStyleSheet("background-color: transparent; border-radius: 0px;") 
+        self.image_label1.setStyleSheet("background-color: transparent; border-radius: 0px;")
         self.image_label1.setMinimumSize(600, 200)
 
         # 图片1连接鼠标事件
@@ -116,9 +114,9 @@ class ImageWidget(QWidget):
         # 图片2
         self.image_label2 = QLabel(self)
         self.image_label2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label2.setStyleSheet("background-color: transparent; border-radius: 0px;") 
+        self.image_label2.setStyleSheet("background-color: transparent; border-radius: 0px;")
         self.image_label2.setMinimumSize(600, 200)
-        
+
 
         # 图片2连接鼠标事件
         self.image_label2.mousePressEvent = self.mousePressEvent2
@@ -144,10 +142,10 @@ class ImageWidget(QWidget):
 
         self.images_widget.setLayout(self.images_layout)
 
-        
+
         # 控制区组件群
         self.control_layout = QVBoxLayout(self.control_widget)
-       
+
         self.load_button1 = PushButton('LoadImg1', self.control_widget)
         self.load_button1.setFixedWidth(180)
         self.load_button1.clicked.connect(self.loadImage1) # 上传按钮连接事件
@@ -155,13 +153,13 @@ class ImageWidget(QWidget):
         self.load_button2 = PushButton('LoadImg2', self.control_widget)
         self.load_button2.setFixedWidth(180)
         self.load_button2.clicked.connect(self.loadImage2) # 上传按钮连接事件
-        
+
         # 图片1透明度控制
         self.slider1 = Slider(Qt.Orientation.Horizontal, self)
         self.slider1.setFixedWidth(180)
         self.slider1.setValue(100)
         self.slider1.valueChanged.connect(self.setOpacity1) # 连接 slider1 的值变化事件到透明度控制方法
-        
+
         # 图片2透明度控制
         self.slider2 = Slider(Qt.Orientation.Horizontal, self)
         self.slider2.setFixedWidth(180)
@@ -169,7 +167,7 @@ class ImageWidget(QWidget):
         self.slider2.valueChanged.connect(self.setOpacity2) # 连接 slider2 的值变化事件到透明度控制方法
 
         # 图片1大小控制
-        self.zoom_widget1 = QWidget(self.control_widget)
+        self.zoom_widget1 = CardWidget(self.control_widget)
         self.zoom_widget1_layout = QHBoxLayout(self.control_widget)
         self.zoomOut_button1 = PushButton('-', self.control_widget)
         self.zoomIn_button1 = PushButton('+', self.control_widget)
@@ -177,9 +175,8 @@ class ImageWidget(QWidget):
         self.zoomOut_button1.clicked.connect(self.zoomOut1)
         self.zoomIn_button1.clicked.connect(self.zoomIn1)
 
-        zoom_widget1_line = QWidget(self)
-        zoom_widget1_line.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29);")
-        zoom_widget1_line.setFixedWidth(1) 
+        zoom_widget1_line = CardWidget(self)
+        zoom_widget1_line.setFixedWidth(1)
 
         self.zoom_widget1_layout.addWidget(self.zoomOut_button1)
         self.zoom_widget1_layout.addWidget(zoom_widget1_line)
@@ -188,7 +185,7 @@ class ImageWidget(QWidget):
         self.zoom_widget1.setLayout(self.zoom_widget1_layout)
 
         # 图片2大小控制
-        self.zoom_widget2 = QWidget(self.control_widget)
+        self.zoom_widget2 = CardWidget(self.control_widget)
         self.zoom_widget2_layout = QHBoxLayout(self.control_widget)
         self.zoomOut_button2 = PushButton('-', self.control_widget)
         self.zoomIn_button2 = PushButton('+', self.control_widget)
@@ -196,9 +193,8 @@ class ImageWidget(QWidget):
         self.zoomOut_button2.clicked.connect(self.zoomOut2)
         self.zoomIn_button2.clicked.connect(self.zoomIn2)
 
-        zoom_widget2_line = QWidget(self)
-        zoom_widget2_line.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29);")
-        zoom_widget2_line.setFixedWidth(1) 
+        zoom_widget2_line = CardWidget(self)
+        zoom_widget2_line.setFixedWidth(1)
 
         self.zoom_widget2_layout.addWidget(self.zoomOut_button2)
         self.zoom_widget2_layout.addWidget(zoom_widget2_line)
@@ -212,13 +208,11 @@ class ImageWidget(QWidget):
         self.output_button.clicked.connect(self.outputList)
 
         # 创建分隔线
-        self.line1_widget = QWidget(self)
-        self.line1_widget.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29);")
-        self.line1_widget.setFixedHeight(1) 
+        self.line1_widget = CardWidget(self)
+        self.line1_widget.setFixedHeight(1)
 
-        self.line2_widget = QWidget(self)
-        self.line2_widget.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29);")
-        self.line2_widget.setFixedHeight(1) 
+        self.line2_widget = CardWidget(self)
+        self.line2_widget.setFixedHeight(1)
 
         # 组件加载到layout
         self.control_layout.addSpacing(10)
@@ -251,7 +245,7 @@ class ImageWidget(QWidget):
         # 下半区加载到layout
         self.bottom_layout.addWidget(self.control_widget)
         self.bottom_layout.addWidget(self.images_widget)
-        
+
         self.layout.addWidget(self.top_widget)
         self.layout.addWidget(self.bottom_widget)
 
@@ -294,38 +288,65 @@ class ImageWidget(QWidget):
             #     duration=1000,    # won't disappear automatically
             #     parent=self
             # )
-                
+
     def chooseImage1(self, file_name):
-            print(file_name)
-            self.output_image1 = file_name
-            if file_name:
-                self.original_pixmap1 = QPixmap(file_name)  # 存储原始加载的图片
-                self.image_label1.setPixmap(self.original_pixmap1)
-                self.image_label1.setFixedSize(self.original_pixmap1.size())  # 设置image_label1的大小与图片大小一致
-                InfoBar.success(
+        self.output_image1 = file_name
+        if file_name:
+            # 加载图像为 QImage，并确保是带 alpha 通道的格式
+            image = QImage(file_name).convertToFormat(QImage.Format.Format_ARGB32)
+
+            # 遍历每个像素，将白色背景改为透明
+            for y in range(image.height()):
+                for x in range(image.width()):
+                    color = image.pixelColor(x, y)
+                    # 判断是否为接近白色，可以调节容差（下面是 RGB > 240 判定为白）
+                    if color.red() > 230 and color.green() > 230 and color.blue() > 230:
+                        color.setAlpha(0)
+                        image.setPixelColor(x, y, color)
+
+            # 转换为 QPixmap
+            self.original_pixmap1 = QPixmap.fromImage(image)
+            self.image_label1.setPixmap(self.original_pixmap1)
+            self.image_label1.setFixedSize(self.original_pixmap1.size())
+            self.image_label1.repaint()
+
+            InfoBar.success(
                 title='提示消息',
-                content="图片1加载成功。",
+                content="图片1加载成功，白色背景已设为透明。",
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
-                duration=1000,    # won't disappear automatically
+                duration=1000,
                 parent=self
             )
 
     def chooseImage2(self, file_name):
-            print(file_name)
-            self.output_image2 = file_name
-            if file_name:
-                self.original_pixmap2 = QPixmap(file_name)  # 存储原始加载的图片
-                self.image_label2.setPixmap(self.original_pixmap2)
-                self.image_label2.setFixedSize(self.original_pixmap2.size())  # 设置image_label1的大小与图片大小一致
-                InfoBar.success(
+        self.output_image2 = file_name
+        if file_name:
+            # 加载图像为 QImage，并确保是带 alpha 通道的格式
+            image = QImage(file_name).convertToFormat(QImage.Format.Format_ARGB32)
+
+            # 遍历每个像素，将白色背景变成透明
+            for y in range(image.height()):
+                for x in range(image.width()):
+                    color = image.pixelColor(x, y)
+                    if color.red() > 240 and color.green() > 240 and color.blue() > 240:
+                        color.setAlpha(0)
+                        image.setPixelColor(x, y, color)
+
+            # 转换为 QPixmap 显示
+            self.original_pixmap2 = QPixmap.fromImage(image)
+            self.image_label2.setPixmap(self.original_pixmap2)
+            self.image_label2.setFixedSize(self.original_pixmap2.size())
+            self.image_label2.repaint()
+
+            InfoBar.success(
                 title='提示消息',
-                content="图片2加载成功。",
+                content="图片2加载成功，白色背景已设为透明。",
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
-                duration=3000,    # won't disappear automatically
+                duration=3000,
                 parent=self
             )
 
@@ -333,7 +354,6 @@ class ImageWidget(QWidget):
     # 图片2加载方法
     def loadImage2(self):
             file_name, _ = QFileDialog.getOpenFileName(self, "Select Image2", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;All Files (*)")
-            
             if file_name:
                 self.output_image2 = file_name
                 self.original_pixmap2 = QPixmap(file_name)  # 存储原始加载的图片
@@ -348,7 +368,7 @@ class ImageWidget(QWidget):
                 duration=3000,    # won't disappear automatically
                 parent=self
             )
-                
+
     # 图片2加载方法
     def outputList(self):
             #old_list = self.data_provider._instance.get_output_list()
@@ -367,7 +387,7 @@ class ImageWidget(QWidget):
                 now = int(round(time.time()*1000))
                 nowTime = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(now/1000))
                 new_list = [self.output_image1, self.output_image2, 'None info', 'None info', nowTime],
-                
+
                 self.data_changer._instance.set_result_list(new_list)
 
                 InfoBar.success(
@@ -379,7 +399,7 @@ class ImageWidget(QWidget):
                 duration=3000,    # won't disappear automatically
                 parent=self
             )
-        
+
     # 图片1透明度方法
     def setOpacity1(self, value):
         opacity = value / 100.0  # 将 slider1 的值映射到透明度范围 0.0 - 1.0
@@ -405,7 +425,7 @@ class ImageWidget(QWidget):
             # 设置图片的位置为记录的位置
             self.image_label1.move(self.image_label1_position)
             self.image_label2.move(self.image_label2_position)
-            
+
     def zoomOut1(self):
         if self.original_pixmap1 is not None:
             self.current_scale1 -= 0.1  # 减小0.1倍
@@ -418,7 +438,7 @@ class ImageWidget(QWidget):
             # 设置图片的位置为记录的位置
             self.image_label1.move(self.image_label1_position)
             self.image_label2.move(self.image_label2_position)
-    
+
     # 图片2缩放方法
     def zoomIn2(self):
         if self.original_pixmap2 is not None:
@@ -432,7 +452,7 @@ class ImageWidget(QWidget):
             # 设置图片的位置为记录的位置
             self.image_label1.move(self.image_label1_position)
             self.image_label2.move(self.image_label2_position)
-            
+
     def zoomOut2(self):
         if self.original_pixmap2 is not None:
             self.current_scale2 -= 0.1  # 减小0.1倍
@@ -518,7 +538,6 @@ class SampleCard(QFrame):
 
         self.titleLabel.setObjectName('titleLabel')
         self.contentLabel.setObjectName('contentLabel')
-        self.setStyleSheet("background-color: rgb(36, 36, 36); border: 0.4px solid rgb(29, 29, 29);")
 
     def mouseReleaseEvent(self, e):
         super().mouseReleaseEvent(e)

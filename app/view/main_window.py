@@ -1,6 +1,6 @@
 # coding: utf-8
 from PyQt6.QtCore import Qt, pyqtSignal, QEasingCurve, QUrl, QSize
-from PyQt6.QtGui import QIcon, QDesktopServices
+from PyQt6.QtGui import QIcon, QDesktopServices, QColor
 from PyQt6.QtWidgets import QApplication, QHBoxLayout, QFrame, QWidget
 
 from qfluentwidgets import NavigationAvatarWidget, NavigationItemPosition, MessageBox, FluentWindow, SplashScreen
@@ -9,6 +9,7 @@ from qfluentwidgets import FluentIcon as FIF
 from app.view.gallery_interface import GalleryInterface
 
 from .folder_interface import FolderInterface
+from .label_interface import LabelInterface
 from .list_interface import ListInterface
 from .match_interface import MatchInterface
 from .output_interface import OutputInterface
@@ -30,7 +31,8 @@ class MainWindow(FluentWindow):
         self.matchInterface = MatchInterface(self)
         self.outputInterface = OutputInterface(self)
         self.settingInterface = SettingInterface(self)
-        
+        self.labelInterface = LabelInterface(self)
+
 
         # initialize layout
         self.initLayout()
@@ -53,12 +55,13 @@ class MainWindow(FluentWindow):
         self.addSubInterface(self.listInterface, FIF.ALIGNMENT,t.list, pos)
         self.addSubInterface(self.matchInterface, FIF.BACK_TO_WINDOW, t.match, pos)
         self.addSubInterface(self.outputInterface, FIF.DOWNLOAD, t.output, pos)
+        self.addSubInterface(self.labelInterface, FIF.PENCIL_INK, t.label, pos)
         
 
         # add custom widget to bottom
         self.navigationInterface.addWidget(
             routeKey='avatar',
-            widget=NavigationAvatarWidget('作者', 'app/resource/images/avator.png'),
+            widget=NavigationAvatarWidget('作者', 'app/resource/images/avatar.png'),
             onClick=self.onSupport,
             position=NavigationItemPosition.BOTTOM
         )
@@ -66,16 +69,17 @@ class MainWindow(FluentWindow):
             self.settingInterface, FIF.SETTING, t.setting, NavigationItemPosition.BOTTOM)
 
     def initWindow(self):
-        self.resize(1280, 1010)
-        self.setMinimumWidth(960)
-        self.setMinimumHeight(760)
-        self.setWindowIcon(QIcon('app/resource/images/logo.png'))
+        self.setWindowIcon(QIcon('app/resource/images/start.png'))
         self.setWindowTitle('Fragment Matcher')
 
         # create splash screen
         self.splashScreen = SplashScreen(self.windowIcon(), self)
-        self.splashScreen.setIconSize(QSize(106, 106))
+        self.splashScreen.setIconSize(QSize(793, 593))
         self.splashScreen.raise_()
+
+        # 获取屏幕尺寸并设置窗口为最大可用大小
+        screen_geometry = QApplication.primaryScreen().availableGeometry()
+        self.setGeometry(screen_geometry)
 
         desktop = QApplication.screens()[0].availableGeometry()
         w, h = desktop.width(), desktop.height()

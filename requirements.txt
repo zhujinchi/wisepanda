@@ -1,0 +1,6 @@
+torch
+PyQt6
+PyQt6-tools
+numpy
+openpyxl
+opencv-python

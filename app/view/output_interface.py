@@ -1,7 +1,8 @@
 # coding:utf-8
 from PyQt6.QtCore import Qt, QFile, QTextStream, pyqtSignal
 from PyQt6.QtWidgets import QFrame, QTreeWidgetItem, QHBoxLayout, QTreeWidgetItemIterator, QTableWidgetItem, QListWidgetItem, QWidget, QVBoxLayout, QHBoxLayout, QFileDialog
-from qfluentwidgets import TreeWidget, TableWidget, ListWidget, PushButton, InfoBar, InfoBarIcon, InfoBarPosition
+from qfluentwidgets import TreeWidget, TableWidget, ListWidget, PushButton, InfoBar, InfoBarIcon, InfoBarPosition, \
+    CardWidget
 from openpyxl import Workbook
 
 from .gallery_interface import GalleryInterface
@@ -26,37 +27,39 @@ class OutputInterface(GalleryInterface):
 class tableView(QWidget):
 
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        
+        super().__init__(parent)
         self.initUI()
-    
+
     def initUI(self):
-        
 
+        # 外层布局
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(10, 10, 10, 10)
 
-        self.layout = QVBoxLayout()
-        
-
-        # 构建背景层
-        self.mainWidget = QWidget(self)
+        # 使用 CardWidget 作为主背景层（自带圆角+阴影+主题感知）
+        self.mainWidget = CardWidget(self)
         self.mainWidget.setMinimumHeight(800)
-        self.mainWidget.setStyleSheet("background-color: rgb(32, 32, 32); border: 0.4px solid rgb(29, 29, 29); border-radius: 5px;")
-        
-        # 构建表格
-        self.table_layout = QVBoxLayout()
+
+        # 表格部分布局
+        self.table_layout = QVBoxLayout(self.mainWidget)
+        self.table_layout.setSpacing(12)
+        self.table_layout.setContentsMargins(20, 20, 20, 20)
+
+        # 表格控件（保持原有逻辑）
         self.tableWidget = TableFrame(self)
         self.table_layout.addWidget(self.tableWidget)
 
-    
-        self.mainWidget.setLayout(self.table_layout)
-
-        self.download_button = PushButton('列表下载(.xlsx)', self.mainWidget)
+        # 下载按钮（保持 Fluent 风格）
+        self.download_button = PushButton('列表下载 (.xlsx)', self.mainWidget)
         self.download_button.setFixedWidth(180)
-        self.download_button.clicked.connect(self.tableWidget.__save_file__) # 文本下载本地按钮连接事件
+        self.download_button.clicked.connect(self.tableWidget.__save_file__)
         self.table_layout.addWidget(self.download_button)
-        
+
+        # 设置布局
+        self.mainWidget.setLayout(self.table_layout)
         self.layout.addWidget(self.mainWidget)
         self.setLayout(self.layout)
+
 
 class Frame(QFrame):
 
