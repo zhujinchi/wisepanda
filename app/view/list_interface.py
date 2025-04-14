@@ -11,6 +11,7 @@ from PyQt6.QtGui import QIcon, QPainter, QPixmap, QImage
 from qfluentwidgets import (SubtitleLabel, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon,
                             IconWidget, Theme, PushButton, PushButton, InfoBar, InfoBarPosition, HorizontalSeparator)
 from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QSizePolicy
+from sympy import is_amicable
 
 from app.common.singleton_imgData_list import Singleton_imgData_list
 
@@ -569,7 +570,27 @@ class ImgWidget(QWidget):
                     color.setAlpha(0)
                     image.setPixelColor(x, y, color)
 
-        pixmap = QPixmap.fromImage(image)
+        # 计算图像的有效区域（即非透明部分）
+        left, top, right, bottom = image.width(), image.height(), 0, 0
+        for y in range(image.height()):
+            for x in range(image.width()):
+                if image.pixelColor(x, y).alpha() > 0:  # 非透明区域
+                    left = min(left, x)
+                    top = min(top, y)
+                    right = max(right, x)
+                    bottom = max(bottom, y)
+
+            # 截取有效区域（去除透明边缘）
+        cropped_image = image.copy(left, top, right - left + 1, bottom - top + 1)
+
+            # 如果图像尺寸过小，进行放大
+        if cropped_image.width() < 100 or cropped_image.height() < 100:
+            target_width = 200  # 目标宽度
+            target_height = 200  # 目标高度
+            cropped_image = cropped_image.scaled(target_width, target_height, Qt.AspectRatioMode.KeepAspectRatio,
+                                                     Qt.TransformationMode.SmoothTransformation)
+
+        pixmap = QPixmap.fromImage(cropped_image)
         return QIcon(pixmap)
 
     img = pyqtProperty(QIcon, getImg, setImg)
