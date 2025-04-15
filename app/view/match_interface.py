@@ -3,7 +3,7 @@ import sys
 import time
 from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve, QDateTime
 from PyQt6.QtWidgets import QScrollArea, QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QWidget, QSlider, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy, QFrame, QGraphicsOpacityEffect
-from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor
+from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor, QWheelEvent
 from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectionScrollArea, SmoothScrollArea, \
     ScrollArea, HollowHandleStyle, Slider, setTheme, Theme, PushButton, BodyLabel, IconWidget, TextWrap, FlowLayout, \
     CardWidget
@@ -102,25 +102,18 @@ class ImageWidget(CardWidget):
         self.images_layout = QVBoxLayout()
 
         # 图片1
-        self.image_label1 = QLabel(self)
-        self.image_label1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label1.setStyleSheet("background-color: transparent; border-radius: 0px;")
-        self.image_label1.setMinimumSize(600, 200)
-
+        self.image_label1 = ZoomableLabel(self)
         # 图片1连接鼠标事件
         self.image_label1.mousePressEvent = self.mousePressEvent1
         self.image_label1.mouseMoveEvent = self.mouseMoveEvent1
-
+        self.image_label1.wheelScrolled.connect(self.onWheelScrolled1)
         # 图片2
-        self.image_label2 = QLabel(self)
-        self.image_label2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label2.setStyleSheet("background-color: transparent; border-radius: 0px;")
-        self.image_label2.setMinimumSize(600, 200)
-
+        self.image_label2 = ZoomableLabel(self)
 
         # 图片2连接鼠标事件
         self.image_label2.mousePressEvent = self.mousePressEvent2
         self.image_label2.mouseMoveEvent = self.mouseMoveEvent2
+        self.image_label2.wheelScrolled.connect(self.onWheelScrolled2)
 
         # 初始化透明度效果
         self.opacityEffect1 = QGraphicsOpacityEffect()
@@ -251,6 +244,18 @@ class ImageWidget(CardWidget):
 
         self.setLayout(self.layout)
 
+    def onWheelScrolled1(self, zoom_in: bool):
+        if zoom_in:
+            self.zoomIn1()
+        else:
+            self.zoomOut1()
+
+    def onWheelScrolled2(self, zoom_in: bool):
+        if zoom_in:
+            self.zoomIn2()
+        else:
+            self.zoomOut2()
+
     # 更新result_list的方法
     def updateResultList(self, img_list):
         # 清除现有子widget
@@ -304,15 +309,27 @@ class ImageWidget(CardWidget):
                         color.setAlpha(0)
                         image.setPixelColor(x, y, color)
 
+            left, top, right, bottom = image.width(), image.height(), 0, 0
+            for y in range(image.height()):
+                for x in range(image.width()):
+                    if image.pixelColor(x, y).alpha() > 0:  # 非透明区域
+                        left = min(left, x)
+                        top = min(top, y)
+                        right = max(right, x)
+                        bottom = max(bottom, y)
+
+                # 截取有效区域（去除透明边缘）
+            cropped_image = image.copy(left, top, right - left + 1, bottom - top + 1)
+
             # 转换为 QPixmap
-            self.original_pixmap1 = QPixmap.fromImage(image)
+            self.original_pixmap1 = QPixmap.fromImage(cropped_image)
             self.image_label1.setPixmap(self.original_pixmap1)
             self.image_label1.setFixedSize(self.original_pixmap1.size())
             self.image_label1.repaint()
 
             InfoBar.success(
                 title='提示消息',
-                content="图片1加载成功，白色背景已设为透明。",
+                content="图片1加载成功",
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
@@ -334,8 +351,20 @@ class ImageWidget(CardWidget):
                         color.setAlpha(0)
                         image.setPixelColor(x, y, color)
 
+            left, top, right, bottom = image.width(), image.height(), 0, 0
+            for y in range(image.height()):
+                for x in range(image.width()):
+                    if image.pixelColor(x, y).alpha() > 0:  # 非透明区域
+                        left = min(left, x)
+                        top = min(top, y)
+                        right = max(right, x)
+                        bottom = max(bottom, y)
+
+                # 截取有效区域（去除透明边缘）
+            cropped_image = image.copy(left, top, right - left + 1, bottom - top + 1)
+
             # 转换为 QPixmap 显示
-            self.original_pixmap2 = QPixmap.fromImage(image)
+            self.original_pixmap2 = QPixmap.fromImage(cropped_image)
             self.image_label2.setPixmap(self.original_pixmap2)
             self.image_label2.setFixedSize(self.original_pixmap2.size())
             self.image_label2.repaint()
@@ -542,3 +571,23 @@ class SampleCard(QFrame):
     def mouseReleaseEvent(self, e):
         super().mouseReleaseEvent(e)
         self.clicked.emit()
+
+class ZoomableLabel(QLabel):
+    wheelScrolled = pyqtSignal(bool)  # True = 放大，False = 缩小
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setScaledContents(True)
+        self.image_label.setStyleSheet("background-color: transparent; border-radius: 0px;")
+        self.image_label.setMinimumSize(600, 200)
+
+
+    def wheelEvent(self, event: QWheelEvent):
+        if event.angleDelta().y() > 0:
+            self.wheelScrolled.emit(True)   # 向上滚动 = 放大
+        else:
+            self.wheelScrolled.emit(False)  # 向下滚动 = 缩小
+
+
