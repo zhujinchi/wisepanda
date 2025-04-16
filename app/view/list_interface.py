@@ -208,7 +208,7 @@ class IconCardView(QWidget):
         """ add icon to view """
         card = PreviewCard(img_dir, self)
         # 新加入的代码 By Clay
-        card.imgWidget.setImg(img_dir)
+        card.imgWidget.setBlurredImg(img_dir)
         
         card.clicked.connect(self.setSelectedImg)
         self.cards.append(card)
@@ -506,6 +506,31 @@ class ImgWidget(QWidget):
         self._img = img
         self.update()
 
+    def setBlurredImg(self, img: Union[str, QIcon]):
+        """
+        对图像进行高斯模糊处理，并转换为 QIcon。
+        支持输入为文件路径、QPixmap、QImage、numpy array、QIcon。
+        """
+        try:
+            cv_img = cv2.imread(img)
+            if cv_img is None:
+                print("[错误] 图像加载失败")
+                return
+
+            # 模糊处理
+            blurred = cv2.GaussianBlur(cv_img, (15, 15), 0)
+
+            height, width, channel = blurred.shape
+            bytes_per_line = 3 * width
+            qimg_blurred = QImage(blurred.data, width, height, bytes_per_line, QImage.Format.Format_BGR888)
+            pixmap = QPixmap.fromImage(qimg_blurred)
+
+            self._img = QIcon(pixmap)
+            self.update()
+
+        except Exception as e:
+            print(f"[异常] 模糊图像处理失败: {e}")
+
     def paintEvent(self, e):
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing |
@@ -535,65 +560,55 @@ class ImgWidget(QWidget):
         else:
             raise TypeError("img must be QIcon or str")
 
-    def processImg(self, img: Union[str, QIcon]):
+    def processImg(self, img: Union[str, QPixmap, QImage, np.ndarray, QIcon]):
         """
-                将图像白色背景处理为透明，并转换为 QIcon
-                支持输入为文件路径、QPixmap、QImage、numpy array
-                """
-        if isinstance(img, QIcon):
-            return img
+        将图像白色背景处理为透明，并转换为 QIcon。
+        更高效实现：使用 numpy 操作代替逐像素遍历。
+        """
+        try:
 
-        if isinstance(img, str):
-            image = QImage(img).convertToFormat(QImage.Format.Format_ARGB32)
-        elif isinstance(img, QPixmap):
-            image = img.toImage().convertToFormat(QImage.Format.Format_ARGB32)
-        elif isinstance(img, QImage):
-            image = img.convertToFormat(QImage.Format.Format_ARGB32)
-        elif isinstance(img, np.ndarray):
-            h, w, ch = img.shape
-            if ch == 3:
-                image = QImage(img.data, w, h, 3 * w, QImage.Format.Format_RGB888).convertToFormat(
-                    QImage.Format.Format_ARGB32)
-            elif ch == 4:
-                image = QImage(img.data, w, h, 4 * w, QImage.Format.Format_RGBA8888).convertToFormat(
-                    QImage.Format.Format_ARGB32)
-            else:
-                raise ValueError("Unsupported image shape")
-        else:
-            raise TypeError("Unsupported image type")
+            image = QImage(img)
+            image = image.convertToFormat(QImage.Format.Format_RGBA8888)
+            width, height = image.width(), image.height()
 
-        # 白色变透明
-        for y in range(image.height()):
-            for x in range(image.width()):
-                color = image.pixelColor(x, y)
-                if color.red() > 240 and color.green() > 240 and color.blue() > 240:
-                    color.setAlpha(0)
-                    image.setPixelColor(x, y, color)
+            # 转换为 numpy 数组
+            ptr = image.bits()
+            ptr.setsize(image.sizeInBytes())
+            arr = np.array(ptr).reshape((height, width, 4))
 
-        # 计算图像的有效区域（即非透明部分）
-        left, top, right, bottom = image.width(), image.height(), 0, 0
-        for y in range(image.height()):
-            for x in range(image.width()):
-                if image.pixelColor(x, y).alpha() > 0:  # 非透明区域
-                    left = min(left, x)
-                    top = min(top, y)
-                    right = max(right, x)
-                    bottom = max(bottom, y)
+            # 将近白色的像素设置为透明
+            white_mask = np.all(arr[:, :, :3] > 240, axis=2)
+            arr[white_mask, 3] = 0  # 设置 alpha 为 0
 
-            # 截取有效区域（去除透明边缘）
-        cropped_image = image.copy(left, top, right - left + 1, bottom - top + 1)
+            # 找出非透明像素的边界
+            alpha = arr[:, :, 3]
+            ys, xs = np.where(alpha > 0)
+            if ys.size == 0 or xs.size == 0:
+                print("[警告] 图像为空或全透明")
+                return QIcon()
 
-            # 如果图像尺寸过小，进行放大
-        if cropped_image.width() < 100 or cropped_image.height() < 100:
-            target_width = 200  # 目标宽度
-            target_height = 200  # 目标高度
-            cropped_image = cropped_image.scaled(target_width, target_height, Qt.AspectRatioMode.KeepAspectRatio,
-                                                     Qt.TransformationMode.SmoothTransformation)
+            top, bottom = ys.min(), ys.max()
+            left, right = xs.min(), xs.max()
 
-        pixmap = QPixmap.fromImage(cropped_image)
-        return QIcon(pixmap)
+            # 裁剪有效区域
+            arr_cropped = arr[top:bottom + 1, left:right + 1]
 
-    img = pyqtProperty(QIcon, getImg, setImg)
+            # 转换回 QImage
+            cropped_h, cropped_w = arr_cropped.shape[:2]
+            cropped_img = QImage(arr_cropped.tobytes(), cropped_w, cropped_h, cropped_w * 4,
+                                 QImage.Format.Format_RGBA8888).copy()
+
+            # 如果图像太小，进行放大
+            if cropped_w < 100 or cropped_h < 100:
+                cropped_img = cropped_img.scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio,
+                                                 Qt.TransformationMode.SmoothTransformation)
+
+            pixmap = QPixmap.fromImage(cropped_img)
+            return QIcon(pixmap)
+
+        except Exception as e:
+            print(f"[错误] 图像处理失败: {e}")
+            return QIcon()
 
 
 class LineEdit(SearchLineEdit):
