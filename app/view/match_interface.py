@@ -1,9 +1,11 @@
 # coding:utf-8
 import sys
 import time
-from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve, QDateTime
-from PyQt6.QtWidgets import QScrollArea, QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QWidget, QSlider, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy, QFrame, QGraphicsOpacityEffect
-from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor, QWheelEvent
+from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve, QDateTime, QRectF
+from PyQt6.QtWidgets import QScrollArea, QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, \
+    QWidget, QSlider, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy, QFrame, QGraphicsOpacityEffect, \
+    QGraphicsPixmapItem, QGraphicsView, QGraphicsScene, QGraphicsItem
+from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor, QWheelEvent, QPainter
 from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectionScrollArea, SmoothScrollArea, \
     ScrollArea, HollowHandleStyle, Slider, setTheme, Theme, PushButton, BodyLabel, IconWidget, TextWrap, FlowLayout, \
     CardWidget
@@ -95,46 +97,40 @@ class ImageWidget(CardWidget):
         # self.control_widget.setMaximumHeight(680)
 
         # 下半区 图片区
-        self.images_widget = CardWidget(self.bottom_widget) # 右区 图片区
+        self.images_widget = CardWidget(self.bottom_widget)
         self.images_widget.setStyleSheet("background-color: transparent; border: 0px")
 
-        # 图片区组件群
+        # 一个 QGraphicsView
+        self.shared_view = ZoomableGraphicsView(self)
+
+        # 共享的场景
+        self.scene = QGraphicsScene(self)
+        self.shared_view.setScene(self.scene)
+
+        # 两个图片项
+        self.pixmap_item1 = QGraphicsPixmapItem()
+        self.pixmap_item2 = QGraphicsPixmapItem()
+
+        # 设置可移动 + 可选择 + 可变形
+        flags = QGraphicsItem.GraphicsItemFlag.ItemIsMovable | \
+                QGraphicsItem.GraphicsItemFlag.ItemIsSelectable | \
+                QGraphicsItem.GraphicsItemFlag.ItemIsFocusable
+
+        self.pixmap_item1.setFlags(flags)
+        self.pixmap_item2.setFlags(flags)
+
+        # 添加到场景中
+        self.scene.addItem(self.pixmap_item1)
+        self.scene.addItem(self.pixmap_item2)
+
+        # 设置初始位置，避免重叠
+        self.pixmap_item1.setPos(0, 0)
+        self.pixmap_item2.setPos(400, 0)
+
+        # 放入界面布局
         self.images_layout = QVBoxLayout()
-
-        # 图片1
-        self.image_label1 = ZoomableLabel(self)
-        # 图片1连接鼠标事件
-        self.image_label1.mousePressEvent = self.mousePressEvent1
-        self.image_label1.mouseMoveEvent = self.mouseMoveEvent1
-        self.image_label1.wheelScrolled.connect(self.onWheelScrolled1)
-        # 图片2
-        self.image_label2 = ZoomableLabel(self)
-
-        # 图片2连接鼠标事件
-        self.image_label2.mousePressEvent = self.mousePressEvent2
-        self.image_label2.mouseMoveEvent = self.mouseMoveEvent2
-        self.image_label2.wheelScrolled.connect(self.onWheelScrolled2)
-
-        # 初始化透明度效果
-        self.opacityEffect1 = QGraphicsOpacityEffect()
-        self.opacityEffect2 = QGraphicsOpacityEffect()
-        self.image_label1.setGraphicsEffect(self.opacityEffect1)
-        self.image_label2.setGraphicsEffect(self.opacityEffect2)
-
-        # 设置初始透明度
-        self.opacityEffect1.setOpacity(1.0)  # 初始透明度为1.0
-        self.opacityEffect2.setOpacity(1.0)  # 初始透明度为1.0
-
-        # 设置初始大小
-        self.current_scale1 = 1.0
-        self.current_scale2 = 1.0
-
-
-        self.images_layout.addWidget(self.image_label1)
-        self.images_layout.addWidget(self.image_label2)
-
+        self.images_layout.addWidget(self.shared_view)
         self.images_widget.setLayout(self.images_layout)
-
 
         # 控制区组件群
         self.control_layout = QVBoxLayout(self.control_widget)
@@ -244,17 +240,6 @@ class ImageWidget(CardWidget):
 
         self.setLayout(self.layout)
 
-    def onWheelScrolled1(self, zoom_in: bool):
-        if zoom_in:
-            self.zoomIn1()
-        else:
-            self.zoomOut1()
-
-    def onWheelScrolled2(self, zoom_in: bool):
-        if zoom_in:
-            self.zoomIn2()
-        else:
-            self.zoomOut2()
 
     # 更新result_list的方法
     def updateResultList(self, img_list):
@@ -281,59 +266,60 @@ class ImageWidget(CardWidget):
             print(file_name)
             if file_name:
                 self.output_image1 = file_name
-                self.original_pixmap1 = QPixmap(file_name)  # 存储原始加载的图片
-                self.image_label1.setPixmap(self.original_pixmap1)
-                self.image_label1.setFixedSize(self.original_pixmap1.size())  # 设置image_label1的大小与图片大小一致
-            #     InfoBar.success(
-            #     title='提示消息',
-            #     content="图片1加载成功。",
-            #     orient=Qt.Orientation.Horizontal,
-            #     isClosable=True,
-            #     position=InfoBarPosition.BOTTOM_RIGHT,
-            #     duration=1000,    # won't disappear automatically
-            #     parent=self
-            # )
+                pixmap = QPixmap(file_name)
+                self.original_pixmap1 = pixmap
+                self.pixmap_item1.setPixmap(pixmap)
 
     def chooseImage1(self, file_name):
-        self.output_image1 = file_name
-        if file_name:
-            # 加载图像为 QImage，并确保是带 alpha 通道的格式
-            image = QImage(file_name).convertToFormat(QImage.Format.Format_ARGB32)
+        try:
+            self.output_image1 = file_name
+            if file_name:
+                image = QImage(file_name).convertToFormat(QImage.Format.Format_ARGB32)
+                if image.isNull():
+                    raise ValueError("图像无法读取，可能文件格式不支持。")
 
-            # 遍历每个像素，将白色背景改为透明
-            for y in range(image.height()):
-                for x in range(image.width()):
-                    color = image.pixelColor(x, y)
-                    # 判断是否为接近白色，可以调节容差（下面是 RGB > 240 判定为白）
-                    if color.red() > 230 and color.green() > 230 and color.blue() > 230:
-                        color.setAlpha(0)
-                        image.setPixelColor(x, y, color)
+                # 将白色背景转为透明
+                for y in range(image.height()):
+                    for x in range(image.width()):
+                        color = image.pixelColor(x, y)
+                        if color.red() > 230 and color.green() > 230 and color.blue() > 230:
+                            color.setAlpha(0)
+                            image.setPixelColor(x, y, color)
 
-            left, top, right, bottom = image.width(), image.height(), 0, 0
-            for y in range(image.height()):
-                for x in range(image.width()):
-                    if image.pixelColor(x, y).alpha() > 0:  # 非透明区域
-                        left = min(left, x)
-                        top = min(top, y)
-                        right = max(right, x)
-                        bottom = max(bottom, y)
+                # 裁剪有效区域
+                left, top, right, bottom = image.width(), image.height(), 0, 0
+                for y in range(image.height()):
+                    for x in range(image.width()):
+                        if image.pixelColor(x, y).alpha() > 0:
+                            left = min(left, x)
+                            top = min(top, y)
+                            right = max(right, x)
+                            bottom = max(bottom, y)
 
-                # 截取有效区域（去除透明边缘）
-            cropped_image = image.copy(left, top, right - left + 1, bottom - top + 1)
+                if left > right or top > bottom:
+                    raise ValueError("图片中没有有效的非透明区域。")
 
-            # 转换为 QPixmap
-            self.original_pixmap1 = QPixmap.fromImage(cropped_image)
-            self.image_label1.setPixmap(self.original_pixmap1)
-            self.image_label1.setFixedSize(self.original_pixmap1.size())
-            self.image_label1.repaint()
+                cropped_image = image.copy(left, top, right - left + 1, bottom - top + 1)
+                self.original_pixmap1 = QPixmap.fromImage(cropped_image)
+                self.pixmap_item1.setPixmap(self.original_pixmap1)
 
-            InfoBar.success(
-                title='提示消息',
-                content="图片1加载成功",
+                InfoBar.success(
+                    title='提示消息',
+                    content="图片1加载成功",
+                    orient=Qt.Orientation.Horizontal,
+                    isClosable=True,
+                    position=InfoBarPosition.BOTTOM_RIGHT,
+                    duration=1000,
+                    parent=self
+                )
+        except Exception as e:
+            InfoBar.error(
+                title="加载失败",
+                content=f"选择图片1时出错：{str(e)}",
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
-                duration=1000,
+                duration=3000,
                 parent=self
             )
 
@@ -365,9 +351,7 @@ class ImageWidget(CardWidget):
 
             # 转换为 QPixmap 显示
             self.original_pixmap2 = QPixmap.fromImage(cropped_image)
-            self.image_label2.setPixmap(self.original_pixmap2)
-            self.image_label2.setFixedSize(self.original_pixmap2.size())
-            self.image_label2.repaint()
+            self.pixmap_item2.setPixmap(self.original_pixmap2)
 
             InfoBar.success(
                 title='提示消息',
@@ -386,8 +370,8 @@ class ImageWidget(CardWidget):
             if file_name:
                 self.output_image2 = file_name
                 self.original_pixmap2 = QPixmap(file_name)  # 存储原始加载的图片
-                self.image_label2.setPixmap(self.original_pixmap2)
-                self.image_label2.setFixedSize(self.original_pixmap2.size())  # 设置image_label1的大小与图片大小一致
+                self.pixmap_item2.setPixmap(self.original_pixmap2)
+                # self.pixmap_item2.setFixedSize(self.original_pixmap2.size())  # 设置image_label1的大小与图片大小一致
                 InfoBar.success(
                 title='提示消息',
                 content="图片2加载成功。",
@@ -429,104 +413,25 @@ class ImageWidget(CardWidget):
                 parent=self
             )
 
-    # 图片1透明度方法
     def setOpacity1(self, value):
-        opacity = value / 100.0  # 将 slider1 的值映射到透明度范围 0.0 - 1.0
-        self.opacityEffect1.setOpacity(opacity)
-        self.image_label1.setGraphicsEffect(self.opacityEffect1)
+        opacity = value / 100.0
+        self.pixmap_item1.setOpacity(opacity)
 
-    # 图片2透明度方法
-    def setOpacity2(self, value):
-        opacity = value / 100.0  # 将 slider1 的值映射到透明度范围 0.0 - 1.0
-        self.opacityEffect2.setOpacity(opacity)
-        self.image_label2.setGraphicsEffect(self.opacityEffect2)
-
-    # 图片1缩放方法
     def zoomIn1(self):
-        if self.original_pixmap1 is not None:
-            self.current_scale1 += 0.1  # 增加0.1倍
-            pixmap = self.original_pixmap1
-            scaled_pixmap = pixmap.scaled(pixmap.size() * self.current_scale1, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-            self.image_label1.setPixmap(scaled_pixmap)
-            self.image_label1.setFixedSize(scaled_pixmap.size())
-            # 等待setFixedSize执行完成
-            QCoreApplication.processEvents()
-            # 设置图片的位置为记录的位置
-            self.image_label1.move(self.image_label1_position)
-            self.image_label2.move(self.image_label2_position)
+        self.shared_view.zoomIn()
 
     def zoomOut1(self):
-        if self.original_pixmap1 is not None:
-            self.current_scale1 -= 0.1  # 减小0.1倍
-            pixmap = self.original_pixmap1
-            scaled_pixmap = pixmap.scaled(pixmap.size() * self.current_scale1, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-            self.image_label1.setPixmap(scaled_pixmap)
-            self.image_label1.setFixedSize(scaled_pixmap.size())
-            # 等待setFixedSize执行完成
-            QCoreApplication.processEvents()
-            # 设置图片的位置为记录的位置
-            self.image_label1.move(self.image_label1_position)
-            self.image_label2.move(self.image_label2_position)
+        self.shared_view.zoomOut()
 
-    # 图片2缩放方法
+    def setOpacity2(self, value):
+        opacity = value / 100.0
+        self.pixmap_item2.setOpacity(opacity)
+
     def zoomIn2(self):
-        if self.original_pixmap2 is not None:
-            self.current_scale2 += 0.1  # 增加0.1倍
-            pixmap = self.original_pixmap2
-            scaled_pixmap = pixmap.scaled(pixmap.size() * self.current_scale2, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-            self.image_label2.setPixmap(scaled_pixmap)
-            self.image_label2.setFixedSize(scaled_pixmap.size())
-            # 等待setFixedSize执行完成
-            QCoreApplication.processEvents()
-            # 设置图片的位置为记录的位置
-            self.image_label1.move(self.image_label1_position)
-            self.image_label2.move(self.image_label2_position)
+        self.shared_view.zoomIn()
 
     def zoomOut2(self):
-        if self.original_pixmap2 is not None:
-            self.current_scale2 -= 0.1  # 减小0.1倍
-            pixmap = self.original_pixmap2
-            scaled_pixmap = pixmap.scaled(pixmap.size() * self.current_scale2, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-            self.image_label2.setPixmap(scaled_pixmap)
-            self.image_label2.setFixedSize(scaled_pixmap.size())
-            # 等待setFixedSize执行完成
-            QCoreApplication.processEvents()
-            # 设置图片的位置为记录的位置
-            self.image_label1.move(self.image_label1_position)
-            self.image_label2.move(self.image_label2_position)
-
-    # 图片鼠标拽动事件
-    def mousePressEvent1(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.drag_start_position1 = event.globalPosition().toPoint() - self.image_label1.pos()
-
-    def mouseMoveEvent1(self, event):
-        if hasattr(self, 'drag_start_position1') and self.drag_start_position1:
-            new_position = event.globalPosition().toPoint() - self.drag_start_position1
-            self.image_label1.move(new_position)
-
-            # 更新 self.image_label1_position
-            self.image_label1_position = self.image_label1.pos()
-
-    def mouseReleaseEvent1(self, event):
-        if hasattr(self, 'drag_start_position1'):
-            del self.drag_start_position1
-
-    def mousePressEvent2(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.drag_start_position2 = event.globalPosition().toPoint() - self.image_label2.pos()
-
-    def mouseMoveEvent2(self, event):
-        if hasattr(self, 'drag_start_position2') and self.drag_start_position2:
-            new_position = event.globalPosition().toPoint() - self.drag_start_position2
-            self.image_label2.move(new_position)
-
-            # 更新 self.image_label2_position
-            self.image_label2_position = self.image_label2.pos()
-
-    def mouseReleaseEvent2(self, event):
-        if hasattr(self, 'drag_start_position2'):
-            del self.drag_start_position2
+        self.shared_view.zoomOut()
 
 class SampleCard(QFrame):
     """ Sample card """
@@ -572,22 +477,47 @@ class SampleCard(QFrame):
         super().mouseReleaseEvent(e)
         self.clicked.emit()
 
-class ZoomableLabel(QLabel):
-    wheelScrolled = pyqtSignal(bool)  # True = 放大，False = 缩小
+class ZoomableGraphicsView(QGraphicsView):
+    wheelScrolled = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.image_label = QLabel()
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label.setScaledContents(True)
-        self.image_label.setStyleSheet("background-color: transparent; border-radius: 0px;")
-        self.image_label.setMinimumSize(600, 200)
+        self.setScene(QGraphicsScene(self))
+        self.pixmap_item = QGraphicsPixmapItem()
+        self.scene().addItem(self.pixmap_item)
 
+        self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
 
-    def wheelEvent(self, event: QWheelEvent):
-        if event.angleDelta().y() > 0:
-            self.wheelScrolled.emit(True)   # 向上滚动 = 放大
-        else:
-            self.wheelScrolled.emit(False)  # 向下滚动 = 缩小
+        self.current_scale = 1.0
+        self.setBackgroundBrush(Qt.GlobalColor.transparent)
 
+    def setPixmap(self, pixmap: QPixmap):
+        self.pixmap_item.setPixmap(pixmap)
 
+        margin =10000 #自由拖动范围边距1
+        rect = QRectF(pixmap.rect()).adjusted(-margin, -margin, margin, margin)
+        self.scene().setSceneRect(rect)
+
+        self.resetTransform()
+        self.current_scale = 1.0
+
+    def wheelEvent(self, event):
+        factor = 1.2 if event.angleDelta().y() > 0 else 1 / 1.2
+        for item in self.scene().selectedItems():
+            item.setScale(item.scale() * factor)
+
+    def zoomIn(self):
+        for item in self.scene().selectedItems():
+            scale = item.scale()
+            item.setScale(scale * 1.1)
+
+    def zoomOut(self):
+        for item in self.scene().selectedItems():
+            scale = item.scale()
+            item.setScale(scale * 0.9)
+
+    def setOpacity(self, opacity: float):
+        self.pixmap_item.setOpacity(opacity)
