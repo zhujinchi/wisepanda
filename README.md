@@ -1,6 +1,5 @@
 # Fratcher：Bamboo Slip Fragment Matcher Based on WisePanda
 
-***
 
 Fratcher is an intuitive computer-assisted tool that implements WisePanda’s capabilities in a practical workflow.Based on physics of fracture and deterioration process,WisePanda predicts matching probabilities among fragments and offers archaeologists a ranked list of the top potential matches for each fragment.Compared to the leading curve matching method, WisePanda increases Top-20 matching accuracy from 35% to 69%. Archaeologists using WisePanda have experienced substantial efficiency improvements (20 times faster) when rejoining fragmented bamboo slips.
 
@@ -8,7 +7,6 @@ Fratcher is an intuitive computer-assisted tool that implements WisePanda’s ca
 
 ## Key Features
 
-***
 
 - First physics-driven deep learning framework designed for rejoining fragmented ancient bamboo slips
 - Achieves high accuracy compared with vision model
@@ -19,7 +17,6 @@ Fratcher is an intuitive computer-assisted tool that implements WisePanda’s ca
 
 ## Quik Start Guide
 
-***
 
 ### 1.Installation
 
