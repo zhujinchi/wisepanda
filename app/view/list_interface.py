@@ -35,7 +35,7 @@ class ListInterface(GalleryInterface):
 
     def __init__(self, parent=None):
         super().__init__(
-            title='竹帛列表',
+            title=self.tr('竹帛列表'),
             parent=parent
         )
         self.setObjectName('iconInterface')
@@ -257,15 +257,15 @@ class ImageInfoPanel(QFrame):
         self.line2_widget.setFixedSize(140,1) 
 
         #上半缀区组件
-        self.topPartTitleLabel = StrongBodyLabel('上半缀区')
+        self.topPartTitleLabel = StrongBodyLabel(self.tr('上半缀区'))
         self.topPartTitleLabel.setStyleSheet("border-left: 0px solid rgb(29, 29, 29);")
-        self.top_button = PushButton("缀区开始匹配", self)
+        self.top_button = PushButton(self.tr("缀区开始匹配"), self)
         self.top_button.clicked.connect(lambda: self.getResultList("top"))
         top_horizontal_layout = QHBoxLayout()
         top_horizontal_layout.addWidget(self.topPartTitleLabel)
-        top_horizontal_layout.addSpacing(40)
+        top_horizontal_layout.addSpacing(10)
         top_horizontal_layout.addWidget(self.line1_widget)
-        top_horizontal_layout.addSpacing(30)
+        # top_horizontal_layout.addSpacing(10)
         top_horizontal_layout.addWidget(self.top_button)
 
         # 创建一个容器 QWidget，并将水平布局设置为其布局
@@ -275,14 +275,14 @@ class ImageInfoPanel(QFrame):
         self.imageTop = ImgWidget(self)
 
         #下半缀区组件
-        self.bottomPartTitleLabel = StrongBodyLabel('下半缀区')
-        self.bottom_button = PushButton("缀区开始匹配", self)
+        self.bottomPartTitleLabel = StrongBodyLabel(self.tr('下半缀区'))
+        self.bottom_button = PushButton(self.tr("缀区开始匹配"), self)
         self.bottom_button.clicked.connect(lambda: self.getResultList("bottom"))
         bottom_horizontal_layout = QHBoxLayout()
         bottom_horizontal_layout.addWidget(self.bottomPartTitleLabel)
-        bottom_horizontal_layout.addSpacing(40)
+        bottom_horizontal_layout.addSpacing(10)
         bottom_horizontal_layout.addWidget(self.line2_widget)
-        bottom_horizontal_layout.addSpacing(30)
+        # bottom_horizontal_layout.addSpacing(0)
         bottom_horizontal_layout.addWidget(self.bottom_button)
 
         # 创建一个容器 QWidget，并将水平布局设置为其布局
@@ -365,7 +365,7 @@ class ImageInfoPanel(QFrame):
             self.imageTop.setImg(self.arrayToQIcon(top))
             self.imageBottom.setImg(self.arrayToQIcon(bottom))
 
-            self.imageInfoLabel.setText("文件名："+ name)
+            self.imageInfoLabel.setText(self.tr("文件名：")+ name)
         except:
             pass
     

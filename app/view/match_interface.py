@@ -20,7 +20,7 @@ class MatchInterface(GalleryInterface):
 
     def __init__(self, parent=None):
         super().__init__(
-            title='匹配区',
+            title=self.tr('匹配区'),
             parent=parent
             )
         self.setObjectName('matchInterface')
@@ -192,7 +192,7 @@ class ImageWidget(CardWidget):
         self.zoom_widget2.setLayout(self.zoom_widget2_layout)
 
         # 导出按钮
-        self.output_button = PushButton('匹配确定', self.control_widget)
+        self.output_button = PushButton(self.tr('匹配确定'), self.control_widget)
         self.output_button.setFixedWidth(180)
         self.output_button.clicked.connect(self.outputList)
 
@@ -205,24 +205,24 @@ class ImageWidget(CardWidget):
 
         # 组件加载到layout
         self.control_layout.addSpacing(10)
-        self.control_layout.addWidget(BodyLabel('导入图片一'))
+        self.control_layout.addWidget(BodyLabel(self.tr('导入图片一')))
         self.control_layout.addWidget(self.load_button1, 0, Qt.AlignmentFlag.AlignHCenter)
-        self.control_layout.addWidget(BodyLabel('图片一透明度'))
+        self.control_layout.addWidget(BodyLabel(self.tr('图片一透明度')))
         self.control_layout.addSpacing(5)
         self.control_layout.addWidget(self.slider1, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addSpacing(10)
-        self.control_layout.addWidget(BodyLabel('图片一缩放'))
+        self.control_layout.addWidget(BodyLabel(self.tr('图片一缩放')))
         self.control_layout.addWidget(self.zoom_widget1, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addSpacing(5)
         self.control_layout.addWidget(self.line1_widget)
         self.control_layout.addSpacing(10)
-        self.control_layout.addWidget(BodyLabel('导入图片二'))
+        self.control_layout.addWidget(BodyLabel(self.tr('导入图片二')))
         self.control_layout.addWidget(self.load_button2, 0, Qt.AlignmentFlag.AlignHCenter)
-        self.control_layout.addWidget(BodyLabel('图片二透明度'))
+        self.control_layout.addWidget(BodyLabel(self.tr('图片二透明度')))
         self.control_layout.addSpacing(5)
         self.control_layout.addWidget(self.slider2, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addSpacing(10)
-        self.control_layout.addWidget(BodyLabel('图片二缩放'))
+        self.control_layout.addWidget(BodyLabel(self.tr('图片二缩放')))
         self.control_layout.addWidget(self.zoom_widget2, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addSpacing(5)
         self.control_layout.addWidget(self.line2_widget)
@@ -276,7 +276,7 @@ class ImageWidget(CardWidget):
             if file_name:
                 image = QImage(file_name).convertToFormat(QImage.Format.Format_ARGB32)
                 if image.isNull():
-                    raise ValueError("图像无法读取，可能文件格式不支持。")
+                    raise ValueError(self.tr("图像无法读取，可能文件格式不支持。"))
 
                 # 将白色背景转为透明
                 for y in range(image.height()):
@@ -297,15 +297,15 @@ class ImageWidget(CardWidget):
                             bottom = max(bottom, y)
 
                 if left > right or top > bottom:
-                    raise ValueError("图片中没有有效的非透明区域。")
+                    raise ValueError(self.tr("图片中没有有效的非透明区域。"))
 
                 cropped_image = image.copy(left, top, right - left + 1, bottom - top + 1)
                 self.original_pixmap1 = QPixmap.fromImage(cropped_image)
                 self.pixmap_item1.setPixmap(self.original_pixmap1)
 
                 InfoBar.success(
-                    title='提示消息',
-                    content="图片1加载成功",
+                    title=self.tr('提示消息'),
+                    content=self.tr("图片1加载成功"),
                     orient=Qt.Orientation.Horizontal,
                     isClosable=True,
                     position=InfoBarPosition.BOTTOM_RIGHT,
@@ -314,8 +314,8 @@ class ImageWidget(CardWidget):
                 )
         except Exception as e:
             InfoBar.error(
-                title="加载失败",
-                content=f"选择图片1时出错：{str(e)}",
+                title=self.tr("加载失败"),
+                content=self.tr(f"选择图片1时出错：{str(e)}"),
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
@@ -354,8 +354,8 @@ class ImageWidget(CardWidget):
             self.pixmap_item2.setPixmap(self.original_pixmap2)
 
             InfoBar.success(
-                title='提示消息',
-                content="图片2加载成功，白色背景已设为透明。",
+                title=self.tr('提示消息'),
+                content=self.tr("图片2加载成功，白色背景已设为透明。"),
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
@@ -373,8 +373,8 @@ class ImageWidget(CardWidget):
                 self.pixmap_item2.setPixmap(self.original_pixmap2)
                 # self.pixmap_item2.setFixedSize(self.original_pixmap2.size())  # 设置image_label1的大小与图片大小一致
                 InfoBar.success(
-                title='提示消息',
-                content="图片2加载成功。",
+                title=self.tr('提示消息'),
+                content=self.tr("图片2加载成功。"),
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
@@ -388,8 +388,8 @@ class ImageWidget(CardWidget):
             # sample ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
             if self.output_image1 == '' or self.output_image2 == '':
                 InfoBar.warning(
-                title='导出错误',
-                content="图片地址为空",
+                title=self.tr('导出错误'),
+                content=self.tr("图片地址为空"),
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
@@ -404,8 +404,8 @@ class ImageWidget(CardWidget):
                 self.data_changer._instance.set_result_list(new_list)
 
                 InfoBar.success(
-                title='提示消息',
-                content="匹配项置入导出列表。",
+                title=self.tr('提示消息'),
+                content=self.tr("匹配项置入导出列表。"),
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
@@ -442,7 +442,7 @@ class SampleCard(QFrame):
         super().__init__(parent=parent)
 
         self.index = index
-        self.title = f"排名: {index+1}"
+        self.title = self.tr("排名：")+f'{index}'
         self.icon = icon
 
         self.iconWidget = IconWidget(icon, self)

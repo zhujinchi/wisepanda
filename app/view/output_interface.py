@@ -13,7 +13,7 @@ class OutputInterface(GalleryInterface):
 
     def __init__(self, parent=None):
         super().__init__(
-            title='导出项',
+            title=self.tr('导出项'),
             parent=parent
         )
         self.setObjectName('outputInterface')
@@ -50,7 +50,7 @@ class tableView(QWidget):
         self.table_layout.addWidget(self.tableWidget)
 
         # 下载按钮（保持 Fluent 风格）
-        self.download_button = PushButton('列表下载 (.xlsx)', self.mainWidget)
+        self.download_button = PushButton(self.tr('列表下载 (.xlsx)'), self.mainWidget)
         self.download_button.setFixedWidth(180)
         self.download_button.clicked.connect(self.tableWidget.__save_file__)
         self.table_layout.addWidget(self.download_button)
@@ -152,8 +152,8 @@ class TableFrame(Frame):
 
             # 打印成功保存的消息
             InfoBar.success(
-            title='提示消息',
-            content="匹配列表导出到本地。",
+            title=self.tr('提示消息'),
+            content=self.tr("匹配列表导出到本地。"),
             orient=Qt.Orientation.Horizontal,
             isClosable=True,
             position=InfoBarPosition.BOTTOM_RIGHT,

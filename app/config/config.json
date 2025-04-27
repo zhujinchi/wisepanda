@@ -6,16 +6,15 @@
         "CheckUpdateAtStartUp": true
     },
     "Folders": {
-        "Download": "D:/try/Fratcher/build",
+        "Download": "D:/try/test_data",
         "Model": "D:/Users/angzeng/Desktop/Fratcher 3",
         "Slips": [
-            "D:/try/test_data",
-            "D:/sjc/Documents/Objects"
+            "D:/try/test_data"
         ]
     },
     "MainWindow": {
         "DpiScale": "Auto",
-        "Language": "Auto"
+        "Language": "zh_CN"
     },
     "QFluentWidgets": {
         "ThemeColor": "#ff009faa",

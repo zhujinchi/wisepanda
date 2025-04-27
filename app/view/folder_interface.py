@@ -181,7 +181,7 @@ class FolderInterface(ScrollArea):
             top_vector_list.append(self.getVector(filedir, 'top')) #修改成新的截取算法
             bottom_vector_list.append(self.getVector(filedir, 'bottom')) #做测试
             percent = (i + 1) / total_num * 30
-            self.addcalculateCard.setContent(f'进度：{percent:.2f}%')
+            self.addcalculateCard.setContent(self.tr("进度：")+f'{percent:.2f}')
             QApplication.processEvents()
 
         now22 = int(round(time.time()*1000))
@@ -208,14 +208,14 @@ class FolderInterface(ScrollArea):
                 # 每两秒更新一次界面
                 if now - last_update_time >= 2.0:
                     percent = 30 + (count / total) * 70
-                    self.addcalculateCard.setContent(f'进度：{percent:.2f}%')
+                    self.addcalculateCard.setContent(self.tr("进度：")+f'{percent:.2f}')
                     QApplication.processEvents()  # 刷新界面
                     last_update_time = now
 
         # 最后更新100%
-        self.addcalculateCard.setContent('进度：100.00%')
+        self.addcalculateCard.setContent(self.tr('进度：100.00%'))
         QApplication.processEvents()  # 刷新界面
-        self.addcalculateCard.setContent('计算完成！')
+        self.addcalculateCard.setContent(self.tr('计算完成！'))
         QApplication.processEvents()  # 刷新界面
         # 现在得到的是一个长列表，假如你的total_num是100，那么这个列表的长度就是10000，这时如果你100，100这样取样，那你会得到bottom_edge_match_list(按照fileList文件名索引)
         # 但是如果你每隔100取样，你就会得到bottom_edge_match_list(按照fileList文件名索引)：：[1::100]
@@ -232,8 +232,8 @@ class FolderInterface(ScrollArea):
         print(now03)
 
         InfoBar.success(
-            title='计算完成',
-            content='所有图像数据已处理完毕！',
+            title=self.tr('计算完成'),
+            content=self.tr('所有图像数据已处理完毕！'),
             duration=3000,  # 显示时间（毫秒）
             parent=self,
             position=InfoBarPosition.TOP_RIGHT
@@ -348,7 +348,6 @@ class FolderInterface(ScrollArea):
         model.eval()
         y_pred = model(torch.tensor(pred_data))
         score = round(y_pred.item(), 4)
-        print("test")
         return score
 
     # 获取某一个地址图片列表顺序的，这里应该去除掉自己本身的匹配，但我没有写，因为一趟遍历会造成加时。

@@ -1,11 +1,12 @@
 # coding:utf-8
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWidgets import QLabel, QHBoxLayout
 from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, FolderListSettingCard,
                             OptionsSettingCard, PushSettingCard,
                             HyperlinkCard, SettingCard, ScrollArea,
                             ComboBoxSettingCard, ExpandLayout, Theme, CustomColorSettingCard,
-                            setTheme, setThemeColor, RangeSettingCard, isDarkTheme)
+                            setTheme, setThemeColor, RangeSettingCard, isDarkTheme, InfoBar)
 
 from qfluentwidgets import FluentIcon as FIF
 from PyQt6.QtWidgets import QWidget, QLabel, QFileDialog
@@ -52,6 +53,14 @@ class SettingInterface(ScrollArea):
             self.aboutGroup
         )
 
+        self.languageCard = ComboBoxSettingCard(
+            cfg.language,
+            FIF.LANGUAGE,
+            self.tr('语言'),
+            self.tr('选择语言'),
+            texts=['简体中文', '繁體中文', 'English', self.tr('Use system setting')],
+            parent=self.personalGroup
+        )
         self.__initWidget()
 
     def __initWidget(self):
@@ -68,6 +77,7 @@ class SettingInterface(ScrollArea):
         StyleSheet.SETTING_INTERFACE.apply(self)
 
         # initialize layout
+        self.__connectSignalToSlot()
         self.__initLayout()
 
 
@@ -75,6 +85,7 @@ class SettingInterface(ScrollArea):
         self.settingLabel.move(36, 30)
 
         self.personalGroup.addSettingCard(self.themeCard)
+        self.personalGroup.addSettingCard(self.languageCard)
         self.aboutGroup.addSettingCard(self.aboutCard)
 
         # add setting card group to layout
@@ -82,3 +93,18 @@ class SettingInterface(ScrollArea):
         self.expandLayout.setContentsMargins(36, 10, 36, 0)
         self.expandLayout.addWidget(self.personalGroup)
         self.expandLayout.addWidget(self.aboutGroup)
+
+    def __showRestartTooltip(self):
+        """ show restart tooltip """
+        InfoBar.success(
+            self.tr('更新成功'),
+            self.tr('设置重启后生效'),
+            duration=1500,
+            parent=self
+        )
+
+    def __connectSignalToSlot(self):
+        """ connect signal to slot """
+        cfg.appRestartSig.connect(self.__showRestartTooltip)
+        # personalization
+        cfg.themeChanged.connect(setTheme)

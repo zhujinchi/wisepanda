@@ -69,7 +69,7 @@ class MainWindow(FluentWindow):
             self.settingInterface, FIF.SETTING, t.setting, NavigationItemPosition.BOTTOM)
 
     def initWindow(self):
-        self.setWindowIcon(QIcon('app/resource/images/start.png'))
+        self.setWindowIcon(QIcon('app/resource/images/panda.png'))
         self.setWindowTitle('Fragment Matcher')
 
         # create splash screen
