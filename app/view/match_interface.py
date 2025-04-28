@@ -442,7 +442,7 @@ class SampleCard(QFrame):
         super().__init__(parent=parent)
 
         self.index = index
-        self.title = self.tr("排名：")+f'{index}'
+        self.title = self.tr("排名：")+f'{index+1}'
         self.icon = icon
 
         self.iconWidget = IconWidget(icon, self)
@@ -456,7 +456,7 @@ class SampleCard(QFrame):
         self.iconWidget.setFixedSize(48, 48)
 
 
-        self.hBoxLayout.setSpacing(28)
+        self.hBoxLayout.setSpacing(20)
         self.hBoxLayout.setContentsMargins(20, 0, 0, 0)
         self.vBoxLayout.setSpacing(2)
         self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
@@ -472,6 +472,16 @@ class SampleCard(QFrame):
 
         self.titleLabel.setObjectName('titleLabel')
         self.contentLabel.setObjectName('contentLabel')
+
+        self.setStyleSheet('''
+            SampleCard {
+                background-color: white;
+                border-radius: 8px;
+            }
+            SampleCard:hover {
+                background-color: #E6F7FF;
+            }
+        ''')
 
     def mouseReleaseEvent(self, e):
         super().mouseReleaseEvent(e)

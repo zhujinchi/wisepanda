@@ -58,7 +58,7 @@ class SettingInterface(ScrollArea):
             FIF.LANGUAGE,
             self.tr('语言'),
             self.tr('选择语言'),
-            texts=['简体中文', '繁體中文', 'English', self.tr('Use system setting')],
+            texts=['简体中文', 'English', self.tr('使用系统设置')],
             parent=self.personalGroup
         )
         self.__initWidget()
