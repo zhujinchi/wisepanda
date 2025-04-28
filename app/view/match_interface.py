@@ -270,6 +270,7 @@ class ImageWidget(CardWidget):
                 self.original_pixmap1 = pixmap
                 self.pixmap_item1.setPixmap(pixmap)
 
+
     def chooseImage1(self, file_name):
         try:
             self.output_image1 = file_name
@@ -302,6 +303,7 @@ class ImageWidget(CardWidget):
                 cropped_image = image.copy(left, top, right - left + 1, bottom - top + 1)
                 self.original_pixmap1 = QPixmap.fromImage(cropped_image)
                 self.pixmap_item1.setPixmap(self.original_pixmap1)
+                self.pixmap_item2.setPixmap(QPixmap())
 
                 InfoBar.success(
                     title=self.tr('提示消息'),
