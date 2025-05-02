@@ -70,7 +70,7 @@ class MainWindow(FluentWindow):
 
     def initWindow(self):
         self.setWindowIcon(QIcon('app/resource/images/panda.png'))
-        self.setWindowTitle('Fragment Matcher')
+        self.setWindowTitle('WisePanda')
 
         # create splash screen
         self.splashScreen = SplashScreen(self.windowIcon(), self)
