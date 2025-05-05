@@ -62,11 +62,12 @@ python demo.py
 ```
 
 
-
 ## Use Examples
 <p align="center">
-  <img src="videos/gif-1.gif" width="30%">
-  <img src="videos/gif-2.gif" width="30%">
-  <img src="videos/gif-3.gif" width="30%">
+  <img src="videos/gif-1.gif" width="100%"><br>
+  <img src="videos/gif-2.gif" width="100%"><br>
+  <img src="videos/gif-3.gif" width="100%">
 </p>
 
+## Algorithm Code
+- FThe core algorithm implementations and related code referenced by this project can be found within the algorithm/ directory. Please refer to the source files in that location for specific details on the algorithms used.
