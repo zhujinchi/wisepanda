@@ -63,8 +63,8 @@ python demo.py
 
 ## Use Examples
 <p align="center">
-  <img src="videos/gif-1.gif" width="90%" style="margin-bottom: 3px"><br>
-  <img src="videos/gif-2.gif" width="90%" style="margin-bottom: 3px"><br>
+  <img src="videos/gif-1.gif" width="90%" style="margin-bottom: 1px"><br>
+  <img src="videos/gif-2.gif" width="90%" style="margin-bottom: 1px"><br>
   <img src="videos/gif-3.gif" width="90%">
 </p>
 
