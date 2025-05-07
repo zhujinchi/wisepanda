@@ -1,6 +1,7 @@
 <p align="center" style="margin-bottom:1em;" >
 <img alt="WisePanda logo" src="images/logo.svg" width="33%" />
 </p>
+
 # Rejoining fragmented ancient bamboo slips with physics-driven deep learning
 
 Bamboo slips, serving as a fundamental medium for documenting ancient East Asian civilizations,contain invaluable historical records spanning philosophy, law, and social life-period. Their durability has enabled these artifacts to survive millennia underground while retaining legible content, offering scholars unprecedented insights into historical societies. However, the excavation of these delicate artifacts presents a critical challenge - many bamboo slips have been fragmented into thousands of pieces, significantly complicating efforts to reconstruct and interpret their content. This fragmentation creates a fundamental obstacle in accessing the wealth of historical knowledge contained in these artifacts.We present WisePanda, the first physics-driven deep learning framework designed for rejoining fragmented ancient bamboo slips.WisePanda is designed to assist and expand the archaeologist’s workflow: its architecture features an interpretable pipeline for fragmented bamboo slip rejoining, leveraging synthesized data based on fracture physics for model training and providing top-k predictions to support expert decision-making.
