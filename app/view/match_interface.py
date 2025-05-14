@@ -246,26 +246,37 @@ class ImageWidget(CardWidget):
         self.is_upper = value
 
     def align_pixmaps_vertically(self):
+        # 将 item2 的缩放设为与 item1 一致
+        scale1 = self.pixmap_item1.scale()
+        self.pixmap_item2.setScale(scale1)
 
-        scale = self.pixmap_item1.scale()
-        self.pixmap_item2.setScale(scale)
-
-        # 获取 item1 的位置和边界
+        # 获取原始边界（未缩放）
         rect1 = self.pixmap_item1.boundingRect()
         rect2 = self.pixmap_item2.boundingRect()
+
+        # 获取缩放后的边界
+        width1_scaled = rect1.width() * scale1
+        height1_scaled = rect1.height() * scale1
+        width2_scaled = rect2.width() * scale1
+        height2_scaled = rect2.height() * scale1
+
+        # 获取 item1 的位置
         pos1 = self.pixmap_item1.pos()
 
-        # 横向居中对齐（以 item1 的中心为基准）
-        center_x1 = pos1.x() + rect1.width() / 2
-        new_x2 = center_x1 - rect2.width() / 2
+        # 横向居中（以缩放后中心为准）
+        center_x1 = pos1.x() + width1_scaled / 2
+        new_x2 = center_x1 - width2_scaled / 2
 
-        print(self.is_upper)
+        spacing = 5 * scale1  # 缩放后的动态间距（可调）
+
         if self.is_upper:
-            new_y2 = pos1.y() - rect2.height()
+            # 放在 item1 上方
+            new_y2 = pos1.y() - height2_scaled - spacing
         else:
-            new_y2 = pos1.y() + rect1.height()
+            # 放在 item1 下方
+            new_y2 = pos1.y() + height1_scaled + spacing
 
-        # 设置 item2 的位置
+        # 设置 item2 的新位置
         self.pixmap_item2.setPos(new_x2, new_y2)
 
     # 更新result_list的方法
