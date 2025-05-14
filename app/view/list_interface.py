@@ -329,9 +329,11 @@ class ImageInfoPanel(QFrame):
             if direction == 'top':
                 imgData = self.img_data_instance._instance.get_result_with_name(dir)
                 result_list = imgData.get_top_edge_match_list()
+                self.singleton_instance._instance.set_bool(True)
             else:
                 imgData = self.img_data_instance._instance.get_result_with_name(dir)
                 result_list = imgData.get_bottom_edge_match_list()
+                self.singleton_instance._instance.set_bool(False)
             # 修改单例文件地址
             self.singleton_instance._instance.set_result_list(result_list)
             InfoBar.success(

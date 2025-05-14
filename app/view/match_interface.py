@@ -41,6 +41,8 @@ class ImageWidget(CardWidget):
         self.data_provider.list_changed.connect(self.updateResultList)
         self.img_provider = Singleton_img()
         self.img_provider.dir_changed.connect(self.chooseImage1)
+        self.data_provider.bool_signal.connect(self.set_bool)
+
 
         self.original_pixmap1 = None  # 存储原始加载的图片
         self.original_pixmap2 = None  # 存储原始加载的图片
@@ -98,7 +100,7 @@ class ImageWidget(CardWidget):
 
         # 下半区 图片区
         self.images_widget = CardWidget(self.bottom_widget)
-        self.images_widget.setStyleSheet("background-color: transparent; border: 0px")
+        self.images_widget.setStyleSheet("background-color: #ffebcc; border: 0px")
 
         # 一个 QGraphicsView
         self.shared_view = ZoomableGraphicsView(self)
@@ -240,6 +242,31 @@ class ImageWidget(CardWidget):
 
         self.setLayout(self.layout)
 
+    def set_bool(self, value):
+        self.is_upper = value
+
+    def align_pixmaps_vertically(self):
+
+        scale = self.pixmap_item1.scale()
+        self.pixmap_item2.setScale(scale)
+
+        # 获取 item1 的位置和边界
+        rect1 = self.pixmap_item1.boundingRect()
+        rect2 = self.pixmap_item2.boundingRect()
+        pos1 = self.pixmap_item1.pos()
+
+        # 横向居中对齐（以 item1 的中心为基准）
+        center_x1 = pos1.x() + rect1.width() / 2
+        new_x2 = center_x1 - rect2.width() / 2
+
+        print(self.is_upper)
+        if self.is_upper:
+            new_y2 = pos1.y() - rect2.height()
+        else:
+            new_y2 = pos1.y() + rect1.height()
+
+        # 设置 item2 的位置
+        self.pixmap_item2.setPos(new_x2, new_y2)
 
     # 更新result_list的方法
     def updateResultList(self, img_list):
@@ -251,8 +278,6 @@ class ImageWidget(CardWidget):
 
         # 创建新的子widget #A修改
         for i, image_score_path in enumerate(img_list):
-            print(list[0])
-            print(image_score_path[1])
             child_widget = SampleCard(image_score_path[1], f'score: {image_score_path[0]}', i, self)
             child_widget.clicked.connect(lambda path=image_score_path[1]: self.chooseImage2(path))
             self.result_layout.addWidget(child_widget)
@@ -354,6 +379,8 @@ class ImageWidget(CardWidget):
             # 转换为 QPixmap 显示
             self.original_pixmap2 = QPixmap.fromImage(cropped_image)
             self.pixmap_item2.setPixmap(self.original_pixmap2)
+
+            self.align_pixmaps_vertically()
 
             InfoBar.success(
                 title=self.tr('提示消息'),
@@ -509,7 +536,7 @@ class ZoomableGraphicsView(QGraphicsView):
     def setPixmap(self, pixmap: QPixmap):
         self.pixmap_item.setPixmap(pixmap)
 
-        margin =10000 #自由拖动范围边距1
+        margin =1000 #自由拖动范围边距1
         rect = QRectF(pixmap.rect()).adjusted(-margin, -margin, margin, margin)
         self.scene().setSceneRect(rect)
 
@@ -530,6 +557,8 @@ class ZoomableGraphicsView(QGraphicsView):
         for item in self.scene().selectedItems():
             scale = item.scale()
             item.setScale(scale * 0.9)
+            bounding_rect = item.boundingRect()
+            print("选中项的范围：", bounding_rect)
 
     def setOpacity(self, opacity: float):
         self.pixmap_item.setOpacity(opacity)
