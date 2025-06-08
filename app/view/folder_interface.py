@@ -181,7 +181,7 @@ class FolderInterface(ScrollArea):
             top_vector_list.append(self.getVector(filedir, 'top')) #修改成新的截取算法
             bottom_vector_list.append(self.getVector(filedir, 'bottom')) #做测试
             percent = (i + 1) / total_num * 30
-            self.addcalculateCard.setContent(self.tr("进度：")+f'{percent:.2f}')
+            self.addcalculateCard.setContent(self.tr("进度：")+f'{percent:.2f}'+'%')
             QApplication.processEvents()
 
         now22 = int(round(time.time()*1000))
@@ -208,7 +208,7 @@ class FolderInterface(ScrollArea):
                 # 每两秒更新一次界面
                 if now - last_update_time >= 2.0:
                     percent = 30 + (count / total) * 70
-                    self.addcalculateCard.setContent(self.tr("进度：")+f'{percent:.2f}')
+                    self.addcalculateCard.setContent(self.tr("进度：")+f'{percent:.2f}'+'%')
                     QApplication.processEvents()  # 刷新界面
                     last_update_time = now
 

@@ -10,7 +10,8 @@ from PyQt6.QtCore import Qt, pyqtSignal, pyqtProperty, QRect, QRectF, QCoreAppli
 from PyQt6.QtGui import QIcon, QPainter, QPixmap, QImage
 from qfluentwidgets import (SubtitleLabel, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon,
                             IconWidget, Theme, PushButton, PushButton, InfoBar, InfoBarPosition, HorizontalSeparator)
-from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QSizePolicy
+from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, \
+    QSizePolicy
 from sympy import is_amicable
 
 from app.common.singleton_imgData_list import Singleton_imgData_list
@@ -43,9 +44,11 @@ class ListInterface(GalleryInterface):
 
         self.vBoxLayout.addWidget(self.iconView)
 
+
 class IconCardView(QWidget):
     """ Icon card view """
     filelistChanged = pyqtSignal(list)
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.data_provider = Singleton_dir()
@@ -64,19 +67,19 @@ class IconCardView(QWidget):
         self.hBoxLayout = QHBoxLayout(self.view)
         self.flowLayout = FlowLayout(self.scrollWidget, isTight=True)
 
-        self.cards = []     # type:List[PreviewCard]
-        self.dirs = []      # type:List[str]
+        self.cards = []  # type:List[PreviewCard]
+        self.dirs = []  # type:List[str]
         self.currentIndex = -1
 
         self.__initWidget()
-    
+
     def __initWidget(self):
         self.updateImgList()
 
         if self.currentIndex >= 0:
             self.cards[self.currentIndex].setSelected(True, True)
-        
-        #self.infoPanel.setImage(self.dirs[0])
+
+        # self.infoPanel.setImage(self.dirs[0])
 
         self.scrollArea.setWidget(self.scrollWidget)
         self.scrollArea.setViewportMargins(0, 5, 0, 5)
@@ -154,7 +157,8 @@ class IconCardView(QWidget):
 
     def search(self, keyWord: str):
         """ search icons """
-        regex = "\d*("+ keyWord +"+)\d*_*\d*"
+        escaped_keyword = re.escape(keyWord)  # ✅ 自动处理 _, +, *, (, etc.
+        regex = r"\d*(" + escaped_keyword + r"+)\d*_*\d*"
         target_pattern = re.compile(regex)
 
         results = [card for card in self.cards if re.search(target_pattern, card.name)]
@@ -163,9 +167,11 @@ class IconCardView(QWidget):
             card.setVisible(False)
         for card in results:
             card.setVisible(True)
-        self.flowLayout.update()
-        self.setSelectedImg(results[0].dir)
 
+        self.flowLayout.update()
+
+        if results:
+            self.setSelectedImg(results[0].dir)
 
     def dir_changed(self, value):
         self.dirs = []
@@ -176,7 +182,6 @@ class IconCardView(QWidget):
                 self.addImg(img)
             self.setSelectedImg(self.dirs[0])
         self.flowLayout.update()
-
 
     def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext=['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tif']):
         fileList = []
@@ -189,7 +194,7 @@ class IconCardView(QWidget):
                 continue
         self.filelistChanged.emit(fileList)
         return fileList
-    
+
     def updateImgList(self):
         self.dirs = []
         self.cards = []
@@ -197,7 +202,7 @@ class IconCardView(QWidget):
             for img in self.getImgList():
                 self.addImg(img)
             self.setSelectedImg(self.dirs[0])
-        
+
     def showAllImgs(self):
         self.flowLayout.removeAllWidgets()
         for card in self.cards:
@@ -209,7 +214,7 @@ class IconCardView(QWidget):
         card = PreviewCard(img_dir, self)
         # 新加入的代码 By Clay
         card.imgWidget.setBlurredImg(img_dir)
-        
+
         card.clicked.connect(self.setSelectedImg)
         self.cards.append(card)
         self.dirs.append(img_dir)
@@ -221,10 +226,11 @@ class IconCardView(QWidget):
 
         if self.currentIndex >= 0:
             self.cards[self.currentIndex].setSelected(False)
-  
+
         self.currentIndex = index
         self.cards[index].setSelected(True)
         self.infoPanel.setImage(img_dir)
+
 
 class ImageInfoPanel(QFrame):
     """ Image info panel """
@@ -251,12 +257,12 @@ class ImageInfoPanel(QFrame):
         # 创建分隔线
         self.line1_widget = QWidget(self)
         self.line1_widget.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29);")
-        self.line1_widget.setFixedSize(140,1) 
+        self.line1_widget.setFixedSize(140, 1)
         self.line2_widget = QWidget(self)
         self.line2_widget.setStyleSheet("background-color: rgb(51, 51, 51); border: 0.4px solid rgb(29, 29, 29);")
-        self.line2_widget.setFixedSize(140,1) 
+        self.line2_widget.setFixedSize(140, 1)
 
-        #上半缀区组件
+        # 上半缀区组件
         self.topPartTitleLabel = StrongBodyLabel(self.tr('上半缀区'))
         self.topPartTitleLabel.setStyleSheet("border-left: 0px solid rgb(29, 29, 29);")
         self.top_button = PushButton(self.tr("缀区开始匹配"), self)
@@ -274,7 +280,7 @@ class ImageInfoPanel(QFrame):
         top_container_widget.setLayout(top_horizontal_layout)
         self.imageTop = ImgWidget(self)
 
-        #下半缀区组件
+        # 下半缀区组件
         self.bottomPartTitleLabel = StrongBodyLabel(self.tr('下半缀区'))
         self.bottom_button = PushButton(self.tr("缀区开始匹配"), self)
         self.bottom_button.clicked.connect(lambda: self.getResultList("bottom"))
@@ -315,12 +321,10 @@ class ImageInfoPanel(QFrame):
 
         self.imageInfoLabel.setObjectName('imageInfoLabel')
 
-
     def onFileListChanged(self, filelist):
         self.file_list = filelist
         if len(filelist) > 0:
             self.choose_img = filelist[0]
-
 
     def getResultList(self, direction):
         dir = self.choose_img
@@ -351,7 +355,7 @@ class ImageInfoPanel(QFrame):
     def setImage(self, img_dir):
         try:
             name = img_dir.split('/')[-1].split('\\')[-1].split('.')[0]
-            processed_img=self.originalImage.processImg(img_dir)
+            processed_img = self.originalImage.processImg(img_dir)
             self.originalImage.setImg(processed_img)
             self.img_changer._instance.set_dir(img_dir)
 
@@ -360,24 +364,24 @@ class ImageInfoPanel(QFrame):
             notch_extractor = NotchExtractor(img_dir)
             self.top, self.bottom = notch_extractor.extract_top(), notch_extractor.extract_bottom()
             # print(type(top), type(bottom))
-            crop_size_top = (64,int((self.top.shape[0]*64)/self.top.shape[1]))
-            crop_size_bottom = (64,int((self.bottom.shape[0]*64)/self.bottom.shape[1]))
+            crop_size_top = (64, int((self.top.shape[0] * 64) / self.top.shape[1]))
+            crop_size_bottom = (64, int((self.bottom.shape[0] * 64) / self.bottom.shape[1]))
             top = cv2.resize(self.top, crop_size_top, interpolation=cv2.INTER_AREA)
             bottom = cv2.resize(self.bottom, crop_size_bottom, interpolation=cv2.INTER_AREA)
             self.imageTop.setImg(self.arrayToQIcon(top))
             self.imageBottom.setImg(self.arrayToQIcon(bottom))
 
-            self.imageInfoLabel.setText(self.tr("文件名：")+ name)
+            self.imageInfoLabel.setText(name)
         except:
             pass
-    
+
     def arrayToQIcon(self, ndarray):
         if isinstance(ndarray, np.ndarray):
             # 将ndarray转换为QPixmap
             height, width, channel = ndarray.shape
             bytes_per_line = 3 * width
             qimage = QPixmap.fromImage(QImage(ndarray.data, width, height, bytes_per_line, QImage.Format.Format_RGB888))
-            
+
             # 将QPixmap转换为QIcon
             qicon = QIcon(qimage)
             return qicon
@@ -386,7 +390,7 @@ class ImageInfoPanel(QFrame):
 
 
 class IconCard(QFrame):
-    """ Icon card """ 
+    """ Icon card """
     clicked = pyqtSignal(FluentIcon)
 
     def __init__(self, icon: FluentIcon, parent=None):
@@ -442,7 +446,6 @@ class PreviewCard(QFrame):
         self.dir = img_dir
         self.isSelected = False
 
-
         self.imgWidget = ImgWidget(img_dir, self)
         self.nameLabel = QLabel(self)
         self.vBoxLayout = QVBoxLayout(self)
@@ -471,17 +474,18 @@ class PreviewCard(QFrame):
     def mouseReleaseEvent(self, e):
         if self.isSelected:
             return
-        
+
         self.clicked.emit(self.dir)
 
     def setSelected(self, isSelected: bool, force=False):
         if isSelected == self.isSelected and not force:
             return
         self.isSelected = isSelected
-        
-        #self.imgWidget.setImg(self.dir)
+
+        # self.imgWidget.setImg(self.dir)
         self.setProperty('isSelected', isSelected)
         self.setStyle(QApplication.style())
+
 
 class ImgWidget(QWidget):
     """ Image widget """
@@ -545,7 +549,8 @@ class ImgWidget(QWidget):
             return img
         elif isinstance(img, str):
             pixmap = QPixmap(img)
-            pixmap = pixmap.scaled(QRectF(self.rect()).toRect().size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            pixmap = pixmap.scaled(QRectF(self.rect()).toRect().size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                   Qt.TransformationMode.SmoothTransformation)
             return QIcon(pixmap)
         else:
             raise TypeError("img must be QIcon or str")
@@ -556,7 +561,8 @@ class ImgWidget(QWidget):
             img.paint(painter, QRectF(rect).toRect(), Qt.AlignmentFlag.AlignCenter, state=state)
         elif isinstance(img, str):
             pixmap = QPixmap(img)
-            pixmap = pixmap.scaled(QRectF(rect).toRect().size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            pixmap = pixmap.scaled(QRectF(rect).toRect().size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                   Qt.TransformationMode.SmoothTransformation)
             icon = QIcon(pixmap)
             icon.paint(painter, QRectF(rect).toRect(), Qt.AlignmentFlag.AlignCenter, state=state)
         else:
