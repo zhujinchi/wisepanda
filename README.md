@@ -71,4 +71,21 @@ python demo.py
 
 
 ## Algorithm Code
-- The core algorithm implementations and related code referenced by this project can be found within the algorithm/ directory. Please refer to the source files in that location for specific details on the algorithms used.
+The core algorithm implementations and related code referenced by this project can be found within the algorithm/ directory. Please refer to the source files in that location for specific details on the algorithms used.
+
+## License
+Our code is licensed under the Apache 2.0 license.
+Copyright (c) 2025 Jinchi Zhu.
+
+## Citation
+If you use this code for your research, please cite our paper:
+
+```bibtex
+@article{zhu2025rejoiningfragmentedancientbamboo,
+  title   = {Rejoining fragmented ancient bamboo slips with physics-driven deep learning},
+  author  = {Jinchi Zhu and Zhou Zhao and Hailong Lei and Xiaoguang Wang and Jialiang Lu and Jing Li and Qianqian Tang and Jiachen Shen and Gui-Song Xia and Bo Du and Yongchao Xu},
+  journal = {arXiv preprint arXiv:2505.08601},
+  url     = {https://arxiv.org/abs/2505.08601},
+  year    = {2025}
+}
+```
