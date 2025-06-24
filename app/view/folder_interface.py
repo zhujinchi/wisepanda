@@ -4,23 +4,23 @@ import cv2
 import torch
 import time
 
-from numpy.distutils.from_template import routine_end_re
-from qfluentwidgets import (SettingCardGroup, SwitchSettingCard, FolderListSettingCard,
+from qfluentwidgets import (SettingCardGroup,  FolderListSettingCard,
                             OptionsSettingCard, PushSettingCard,
                             HyperlinkCard, PrimaryPushSettingCard, ScrollArea,
                             ComboBoxSettingCard, ExpandLayout, Theme, CustomColorSettingCard,
-                            setTheme, setThemeColor, RangeSettingCard, isDarkTheme, FluentIcon, ProgressBar)
+                            setTheme)
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import InfoBar, InfoBar, InfoBarPosition
 from PyQt6.QtCore import Qt, pyqtSignal, QUrl, QStandardPaths, QSize
 from PyQt6.QtGui import QDesktopServices, QIcon
 from PyQt6.QtWidgets import QWidget, QLabel, QFileDialog, QPushButton, QHBoxLayout, QVBoxLayout, QApplication, \
-    QProgressBar
+    QProgressBar, QMessageBox
 
 from app.common.img_data import ImageData
 from app.common.singleton_imgData_list import Singleton_imgData_list
 
 from ..common.config import cfg
+from ..common.matchdb import MatchDB
 from ..common.style_sheet import StyleSheet
 from ..common.singleton_dir import Singleton_dir
 
@@ -34,6 +34,7 @@ class FolderInterface(ScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
+        self.match_db = MatchDB()
         self.scrollWidget = QWidget()
         self.expandLayout = ExpandLayout(self.scrollWidget)
 
@@ -224,6 +225,10 @@ class FolderInterface(ScrollArea):
             top_edge_list = score_list[i*total_num:(i+1)*total_num]
 
             top_edge_match_list, bottom_edge_match_list = self.getEdgeListWithFiledirList(top_edge_list, bottom_edge_list, fileList)
+            # 存入数据库
+            self.match_db.save_match(filedir, "top", top_edge_match_list)
+            self.match_db.save_match(filedir, "bottom", bottom_edge_match_list)
+
             image_data = ImageData(filedir, top_edge_match_list, bottom_edge_match_list)
             self.img_data_instance.add_imgData_element(image_data)
 
@@ -377,22 +382,30 @@ class FolderInterface(ScrollArea):
                 continue
         return fileList
 
-    # def getImgList(self, dirs=cfg.get(cfg.downloadFolder), ext=[ 'png', 'jpg', 'tiff']):
-    #     fileList =[]
-    #     for file in os.listdir(dirs):
-    #         if os.path.isdir(os.path.join(dirs,file)):
-    #             # Recursively call getImgList if the file is a directory
-    #             self.getImgList(os.path.join(dirs,file))
-    #         elif os.path.isfile(os.path.join(dirs,file)):
-    #             # Check if the file extension is in the list of supported extensions
-    #             if file.split('.')[-1].lower() in ext:
-    #                 fileList.append(os.path.join(dirs,file))
-    #         else:
-    #             continue
-    #     self.filelistChanged.emit(fileList)
-    #     return fileList
+    def isMatchDatabaseEmpty(self) -> bool:
+        cursor = self.match_db.conn.execute("SELECT COUNT(*) FROM match_result")
+        count = cursor.fetchone()[0]
+        return count == 0
 
-
+    def onAddCalculateClickedWithCheck(self):
+        if self.isMatchDatabaseEmpty():
+            # 数据库为空，直接开始计算
+            self.__onAddCalculateCardClicked()
+        else:
+            # 弹出提示框
+            reply = QMessageBox.question(
+                self,
+                "提示",
+                "数据库中已有匹配结果，是否清空并重新计算？",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                # 清空数据库后重新计算
+                self.match_db.conn.execute("DELETE FROM match_result")
+                self.match_db.conn.commit()
+                self.__onAddCalculateCardClicked()
+            else:
+                print("用户取消了重新计算")
 
     def __connectSignalToSlot(self):
         """ connect signal to slot """
@@ -407,5 +420,5 @@ class FolderInterface(ScrollArea):
             self.__onAddModelCardClicked
         )
         self.addcalculateCard.clicked.connect(
-            self.__onAddCalculateCardClicked
+            self.onAddCalculateClickedWithCheck
         )

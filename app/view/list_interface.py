@@ -1,17 +1,23 @@
 # coding:utf-8
 import os
 import re
+import sqlite3
+
 import cv2
 import numpy as np
 from functools import singledispatchmethod
 from typing import List, Union
+
+from sympy.stats import where
+
+from ..common.matchdb import MatchDB
 
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtProperty, QRect, QRectF, QCoreApplication
 from PyQt6.QtGui import QIcon, QPainter, QPixmap, QImage
 from qfluentwidgets import (SubtitleLabel, SearchLineEdit, SmoothScrollArea, FlowLayout, StrongBodyLabel, FluentIcon,
                             IconWidget, Theme, PushButton, PushButton, InfoBar, InfoBarPosition, HorizontalSeparator)
 from PyQt6.QtWidgets import QApplication, QWidget, QFrame, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, \
-    QSizePolicy
+    QSizePolicy, QComboBox
 from sympy import is_amicable
 
 from app.common.singleton_imgData_list import Singleton_imgData_list
@@ -51,6 +57,7 @@ class IconCardView(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self.conn = sqlite3.connect('match_result.db')
         self.data_provider = Singleton_dir()
         self.data_provider.dir_changed.connect(self.dir_changed)
 
@@ -105,6 +112,10 @@ class IconCardView(QWidget):
         self.searchLineEdit.setPlaceholderText(self.tr("搜索"))
         self.searchLineEdit.setFixedWidth(720)
 
+        self.filterCombo = QComboBox()
+        self.filterCombo.addItems(["全部", "上半缀区未匹配", "下半缀区未匹配"])
+        self.filterCombo.currentIndexChanged.connect(self.applyFilter)
+
         # 主视图布局（图像卡片列表 + 信息面板）
         mainContentLayout = QHBoxLayout()
         mainContentLayout.setSpacing(0)
@@ -142,6 +153,7 @@ class IconCardView(QWidget):
         self.vBoxLayout.addWidget(self.iconLibraryLabel)
         self.vBoxLayout.addSpacing(4)
         self.vBoxLayout.addWidget(self.searchLineEdit, 0, Qt.AlignmentFlag.AlignLeft)
+        self.vBoxLayout.addWidget(self.filterCombo, 0, Qt.AlignmentFlag.AlignRight)
         self.vBoxLayout.addSpacing(8)
 
         # 分隔线（搜索栏下方）
@@ -154,6 +166,57 @@ class IconCardView(QWidget):
     def __connectSignalToSlot(self):
         self.searchLineEdit.clearSignal.connect(self.showAllImgs)
         self.searchLineEdit.searchSignal.connect(self.search)
+
+    def applyFilter(self):
+        filter_type = self.filterCombo.currentText()
+
+        try:
+            if not hasattr(self, 'conn') or self.conn is None:
+                raise ValueError("数据库连接不存在。")
+
+            if filter_type == "全部":
+                for card in self.cards:
+                    card.setVisible(True)
+                return
+
+            # 获取匹配信息
+            try:
+                cursor = self.conn.execute("SELECT image1, image2, image3 FROM match_confirm")
+                results = cursor.fetchall()
+            except Exception as db_err:
+                raise RuntimeError(f"数据库读取失败: {db_err}")
+
+            # 根据筛选条件提取 image1
+            try:
+                if filter_type == "上半缀区未匹配":
+                    filtered_imgs = [row[0] for row in results if row[1]]
+                elif filter_type == "下半缀区未匹配":
+                    filtered_imgs = [row[0] for row in results if row[2]]
+                else:
+                    raise ValueError(f"未知筛选类型: {filter_type}")
+            except Exception as logic_err:
+                raise RuntimeError(f"筛选处理错误: {logic_err}")
+
+            filtered_cards = [card for card in self.cards if card.dir in filtered_imgs]
+
+            for card in self.cards:
+                card.setVisible(True)
+
+            for card in filtered_cards:
+                card.setVisible(False)
+
+            # 设置第一个选中
+            if self.dirs:
+                try:
+                    self.setSelectedImg(self.cards[0].dir)
+                except Exception as sel_err:
+                    print(f"设置默认图像失败: {sel_err}")
+
+            self.flowLayout.update()
+
+        except Exception as e:
+            print("筛选失败：", e)
+
 
     def search(self, keyWord: str):
         """ search icons """
@@ -210,26 +273,39 @@ class IconCardView(QWidget):
             self.flowLayout.addWidget(card)
 
     def addImg(self, img_dir: str):
-        """ add icon to view """
-        card = PreviewCard(img_dir, self)
-        # 新加入的代码 By Clay
-        card.imgWidget.setBlurredImg(img_dir)
+        """ add icon to view with error handling """
+        try:
+            card = PreviewCard(img_dir, self)
 
-        card.clicked.connect(self.setSelectedImg)
-        self.cards.append(card)
-        self.dirs.append(img_dir)
-        self.flowLayout.addWidget(card)
+            # 设置模糊图像
+            card.imgWidget.setBlurredImg(img_dir)
+
+            card.clicked.connect(self.setSelectedImg)
+            self.cards.append(card)
+            self.dirs.append(img_dir)
+            self.flowLayout.addWidget(card)
+
+        except Exception as e:
+            print(f"[addImg] 添加图像失败: {img_dir}\n错误信息: {e}")
 
     def setSelectedImg(self, img_dir: str):
-        """ set selected icon """
-        index = self.dirs.index(img_dir)
+        """ set selected icon with error handling """
+        try:
+            if img_dir not in self.dirs:
+                print(f"[setSelectedImg] 警告：路径未在目录中：{img_dir}")
+                return
 
-        if self.currentIndex >= 0:
-            self.cards[self.currentIndex].setSelected(False)
+            index = self.dirs.index(img_dir)
 
-        self.currentIndex = index
-        self.cards[index].setSelected(True)
-        self.infoPanel.setImage(img_dir)
+            if 0 <= self.currentIndex < len(self.cards):
+                self.cards[self.currentIndex].setSelected(False)
+
+            self.currentIndex = index
+            self.cards[index].setSelected(True)
+            self.infoPanel.setImage(img_dir)
+
+        except Exception as e:
+            print(f"[setSelectedImg] 设置选中图片失败：{img_dir}\n错误信息: {e}")
 
 
 class ImageInfoPanel(QFrame):
@@ -239,6 +315,7 @@ class ImageInfoPanel(QFrame):
         super().__init__(parent=parent)
 
         self.img_changer = Singleton_img()
+        self.match_db = MatchDB()
         self.singleton_instance = Singleton_result()
         self.img_data_instance = Singleton_imgData_list()
 
@@ -327,30 +404,40 @@ class ImageInfoPanel(QFrame):
             self.choose_img = filelist[0]
 
     def getResultList(self, direction):
-        dir = self.choose_img
+        dir = self.choose_img  # 当前选中的图片路径
         print(dir)
+
         try:
-            if direction == 'top':
-                imgData = self.img_data_instance._instance.get_result_with_name(dir)
-                result_list = imgData.get_top_edge_match_list()
-                self.singleton_instance._instance.set_bool(True)
+            # 从数据库读取匹配结果
+            match_list = self.match_db.get_match(dir, direction)
+
+            if match_list is not None:
+                # 根据方向设置状态
+                self.singleton_instance._instance.set_bool(direction == 'top')
+                self.singleton_instance._instance.set_result_list(match_list)
+
+                InfoBar.success(
+                    title=self.tr('读取成功'),
+                    content=self.tr("匹配结果读取完毕"),
+                    orient=Qt.Orientation.Horizontal,
+                    isClosable=True,
+                    position=InfoBarPosition.BOTTOM_RIGHT,
+                    duration=8000,
+                    parent=self
+                )
             else:
-                imgData = self.img_data_instance._instance.get_result_with_name(dir)
-                result_list = imgData.get_bottom_edge_match_list()
-                self.singleton_instance._instance.set_bool(False)
-            # 修改单例文件地址
-            self.singleton_instance._instance.set_result_list(result_list)
-            InfoBar.success(
-                title=self.tr('计算完成'),
-                content=self.tr("匹配结果计算完毕"),
-                orient=Qt.Orientation.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.BOTTOM_RIGHT,
-                duration=16000,
-                parent=self
-            )
-        except:
-            pass
+                InfoBar.warning(
+                    title=self.tr('读取失败'),
+                    content=self.tr("数据库中未找到匹配结果，请先执行计算"),
+                    orient=Qt.Orientation.Horizontal,
+                    isClosable=True,
+                    position=InfoBarPosition.BOTTOM_RIGHT,
+                    duration=8000,
+                    parent=self
+                )
+        except Exception as e:
+            print("读取数据库匹配结果出错：", e)
+
 
     def setImage(self, img_dir):
         try:

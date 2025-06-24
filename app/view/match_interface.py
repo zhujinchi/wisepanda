@@ -5,12 +5,14 @@ from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve,
 from PyQt6.QtWidgets import QScrollArea, QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, \
     QWidget, QSlider, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy, QFrame, QGraphicsOpacityEffect, \
     QGraphicsPixmapItem, QGraphicsView, QGraphicsScene, QGraphicsItem
-from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor, QWheelEvent, QPainter
+from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor, QWheelEvent, QPainter, QKeyEvent
+from adodbapi.ado_consts import directions
 from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectionScrollArea, SmoothScrollArea, \
     ScrollArea, HollowHandleStyle, Slider, setTheme, Theme, PushButton, BodyLabel, IconWidget, TextWrap, FlowLayout, \
     CardWidget
 
 from .gallery_interface import GalleryInterface
+from ..common.matchdb import MatchDB
 from ..common.singleton_output import Singleton_output
 from ..common.singleton_result import Singleton_result
 from ..common.singleton_img import Singleton_img
@@ -33,6 +35,8 @@ class MatchInterface(GalleryInterface):
 class ImageWidget(CardWidget):
     def __init__(self):
         super().__init__()
+        self.matchdb = MatchDB()
+        self.current_index = None
         self.initUI()
 
     def initUI(self):
@@ -42,10 +46,13 @@ class ImageWidget(CardWidget):
         self.img_provider = Singleton_img()
         self.img_provider.dir_changed.connect(self.chooseImage1)
         self.data_provider.bool_signal.connect(self.set_bool)
-
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self.original_pixmap1 = None  # 存储原始加载的图片
         self.original_pixmap2 = None  # 存储原始加载的图片
+        self.path_to_index = {}
+        self.index_to_path = {}
+        self.curr_index = -1
         self.image_label1_position = QPoint(0, 0)  # 记录图片的当前位置
         self.image_label2_position = QPoint(0, 0)  # 记录图片的当前位置
 
@@ -77,8 +84,12 @@ class ImageWidget(CardWidget):
 
         # 添加一系列的子 widget
         for i in range(0):
+            path = self.image_list[1]
+            # 建立映射
+            self.path_to_index[path] = i
+            self.index_to_path[i] = path
             child_widget =  SampleCard(self.image_list[1], 'score: 10.56', i, self)
-            child_widget.clicked.connect(lambda: self.chooseImage2(self.image_list[1]))
+            child_widget.clicked.connect(lambda: self.chooseImage2(i))
             self.result_layout.addWidget(child_widget)
 
         # 设置容器 widget 的布局
@@ -289,12 +300,55 @@ class ImageWidget(CardWidget):
 
         # 创建新的子widget #A修改
         for i, image_score_path in enumerate(img_list):
+            path = image_score_path[1]
+
+            # 建立映射
+            self.path_to_index[path] = i
+            self.index_to_path[i] = path
+
             child_widget = SampleCard(image_score_path[1], f'score: {image_score_path[0]}', i, self)
-            child_widget.clicked.connect(lambda path=image_score_path[1]: self.chooseImage2(path))
+            child_widget.clicked.connect(lambda idx=i: self.chooseImage2(idx))
             self.result_layout.addWidget(child_widget)
 
         # 更新布局
         self.result_layout.update()
+
+    def showPrev(self):
+        if self.curr_index>0:
+            self.curr_index -= 1
+            self.chooseImage2(self.curr_index)
+        else:
+            InfoBar.success(
+                    title=self.tr('提示消息'),
+                    content=self.tr("已经是第一张"),
+                    orient=Qt.Orientation.Horizontal,
+                    isClosable=True,
+                    position=InfoBarPosition.BOTTOM_RIGHT,
+                    duration=500,
+                    parent=self
+                )
+
+    def showNext(self):
+        if self.curr_index<len(self.index_to_path):
+            self.curr_index += 1
+            self.chooseImage2(self.curr_index)
+        else:
+            InfoBar.success(
+                    title=self.tr('提示消息'),
+                    content=self.tr("已经是最后一张"),
+                    orient=Qt.Orientation.Horizontal,
+                    isClosable=True,
+                    position=InfoBarPosition.BOTTOM_RIGHT,
+                    duration=500,
+                    parent=self
+            )
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key.Key_Left:
+            self.showPrev()
+        elif event.key() == Qt.Key.Key_Right:
+            self.showNext()
+
 
     # 图片1加载方法
     def loadImage1(self):
@@ -341,15 +395,6 @@ class ImageWidget(CardWidget):
                 self.pixmap_item1.setPixmap(self.original_pixmap1)
                 self.pixmap_item2.setPixmap(QPixmap())
 
-                InfoBar.success(
-                    title=self.tr('提示消息'),
-                    content=self.tr("图片1加载成功"),
-                    orient=Qt.Orientation.Horizontal,
-                    isClosable=True,
-                    position=InfoBarPosition.BOTTOM_RIGHT,
-                    duration=1000,
-                    parent=self
-                )
         except Exception as e:
             InfoBar.error(
                 title=self.tr("加载失败"),
@@ -361,7 +406,9 @@ class ImageWidget(CardWidget):
                 parent=self
             )
 
-    def chooseImage2(self, file_name):
+    def chooseImage2(self, index):
+        self.current_index = index
+        file_name = self.index_to_path.get(index, "")
         self.output_image2 = file_name
         if file_name:
             # 加载图像为 QImage，并确保是带 alpha 通道的格式
@@ -395,11 +442,11 @@ class ImageWidget(CardWidget):
 
             InfoBar.success(
                 title=self.tr('提示消息'),
-                content=self.tr("图片2加载成功，白色背景已设为透明。"),
+                content=self.tr("图片2加载成功"),
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
-                duration=3000,
+                duration=1000,
                 parent=self
             )
 
@@ -418,14 +465,12 @@ class ImageWidget(CardWidget):
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.BOTTOM_RIGHT,
-                duration=3000,    # won't disappear automatically
+                duration=500,    # won't disappear automatically
                 parent=self
             )
 
     # 图片2加载方法
     def outputList(self):
-            #old_list = self.data_provider._instance.get_output_list()
-            # sample ['219-08-02.png', '224-10-01.png', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '/Users/angzeng/Documents/缀合网络相关/trainval/100', '2023/09/09/20:34'],
             if self.output_image1 == '' or self.output_image2 == '':
                 InfoBar.warning(
                 title=self.tr('导出错误'),
@@ -439,9 +484,14 @@ class ImageWidget(CardWidget):
             else:
                 now = int(round(time.time()*1000))
                 nowTime = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(now/1000))
-                new_list = [self.output_image1, self.output_image2, 'None info', 'None info', nowTime],
+                new_list = [self.output_image1, self.output_image2, 'None info', 'None info', nowTime]
+                if self.is_upper:
+                    direction="top"
+                else:
+                    direction="bottom"
 
                 self.data_changer._instance.set_result_list(new_list)
+                self.matchdb.update_match_confirm(self.output_image1, self.output_image2, direction, nowTime)
 
                 InfoBar.success(
                 title=self.tr('提示消息'),
