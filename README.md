@@ -22,12 +22,13 @@ While manual fragment rejoining is prohibitively time-consuming - the very probl
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
 <img alt="Physical principle" src="images/Fig2.png" width="75%" /><br />
-<em>Physics-driven modeling of bamboo slip fracture and deterioration.a, The breakage process of bamboo slips.b, Detailed stress field model illustrating the mathematical relationship between the fracture angles (θ<sub>i-1</sub>,θ<sub>i</sub> ) and the stress propagation in the x-y coordinate system.c, Time-sequential simulation of the corrosion process.d, Collection of real bamboo slip fracture curves extracted from archaeological samples.e, Synthetically generated fracture curves produced by our physics-driven model.</em>
+<em>The breakage process of bamboo slips showing how fracture propagates across the bamboo’s fiber structure, with the resulting irregular curve composed of black line segments and the corresponding stress field distribution (blue gradient).</em>
 </p>
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
 <img alt="Physical principle" src="images/ex_2.png" width="75%" /><br />
-<em>Physics-driven model of bamboo fracture propagation.a, Bamboo microstructure and fracture propagation, showing vertical fiber bundles (red lines) and how a typical fracture path (dotted black line) traverses across multiple fibers in the x-y coordinate system.b, Fracture angle evolution model illustrating how stress propagates from one fiber to the next. Point o represents the fracture endpoint on the current fiber, while points m and n indicate the starting positions on the adjacent fibers. The angles θ<sub>i-1</sub> and θ<sub>i</sub> represent the fracture direction at consecutive fiber bundles (f<sub>i-1</sub> and f<sub>i</sub>), with the stress field (blue dotted circles) determining the probabilistic transition between angles</em>
+<em>Bamboo microstructure showing vertical fiber bundles (red blocks) and a possible fracture path (composed of dotted black segments) traversing across fibers. The black arrows indicate shear forces ($\sigma^{\infty}Z^{+}$) inducing Mode III fracture. b, Bamboo fracture modeling with stress field propagation between fibers. Points P<sub>1</sub> , P<sub>2</sub> , and P<sub>3</sub>  represent left fracture height on consecutive fibers f<sub>i-1</sub> , f<sub>i</sub>  and f<sub>i+1</sub> , with angles θ<sub>i-1</sub>  and θ<sub>i</sub> showing fracture directions of fibers f<sub>i-1</sub>  and f<sub>i</sub>. Blue dotted circles illustrate the stress field emanating from point P<sub>2</sub> , determining the probability distribution of potential fracture paths.
+</em>
 </p>
 
 ## Key Features
