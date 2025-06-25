@@ -21,12 +21,12 @@ Compared to the leading curve matching method, WisePanda increases Top-20 matchi
 While manual fragment rejoining is prohibitively time-consuming - the very problem we aim to solve - this same process would traditionally be required to generate training data for the model. We resolve this dilemma by resorting to the physics of fracture.By modeling the physical properties of bamboo and the processes that govern its degradation, we generate extensive synthetic training data that captures the essential characteristics of real paired fragment slips. This physics-driven approach enables us to produce large-scale, realistic training data without requiring manual matching efforts, while ensuring the model learns meaningful patterns based on actual material properties rather than superficial features.
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
-<img alt="Physical principle" src="images/Fig2.pdf" width="75%" /><br />
+<img alt="Physical principle" src="images/Fig2.png" width="75%" /><br />
 <em>The breakage process of bamboo slips showing how fracture propagates across the bamboo’s fiber structure, with the resulting irregular curve composed of black line segments and the corresponding stress field distribution (blue gradient).</em>
 </p>
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
-<img alt="Physical principle" src="images/ex_2.pdf" width="75%" /><br />
+<img alt="Physical principle" src="images/ex_2.png" width="75%" /><br />
 <em>Bamboo microstructure showing vertical fiber bundles (red blocks) and a possible fracture path (composed of dotted black segments) traversing across fibers. The black arrows indicate shear forces ($\sigma^{\infty}Z^{+}$) inducing Mode III fracture. b, Bamboo fracture modeling with stress field propagation between fibers. Points P<sub>1</sub> , P<sub>2</sub> , and P<sub>3</sub>  represent left fracture height on consecutive fibers f<sub>i-1</sub> , f<sub>i</sub>  and f<sub>i+1</sub> , with angles θ<sub>i-1</sub>  and θ<sub>i</sub> showing fracture directions of fibers f<sub>i-1</sub>  and f<sub>i</sub>. Blue dotted circles illustrate the stress field emanating from point P<sub>2</sub> , determining the probability distribution of potential fracture paths.
 </em>
 </p>
