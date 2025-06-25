@@ -27,7 +27,7 @@ While manual fragment rejoining is prohibitively time-consuming - the very probl
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
 <img alt="Physical principle" src="images/ex_2.png" width="75%" /><br />
-<em>Bamboo microstructure showing vertical fiber bundles (red blocks) and a possible fracture path (composed of dotted black segments) traversing across fibers. The black arrows indicate shear forces ($\sigma^{\infty}Z^{+}$) inducing Mode III fracture. b, Bamboo fracture modeling with stress field propagation between fibers. Points P<sub>1</sub> , P<sub>2</sub> , and P<sub>3</sub>  represent left fracture height on consecutive fibers f<sub>i-1</sub> , f<sub>i</sub>  and f<sub>i+1</sub> , with angles θ<sub>i-1</sub>  and θ<sub>i</sub> showing fracture directions of fibers f<sub>i-1</sub>  and f<sub>i</sub>. Blue dotted circles illustrate the stress field emanating from point P<sub>2</sub> , determining the probability distribution of potential fracture paths.
+<em>Bamboo microstructure showing vertical fiber bundles (red blocks) and a possible fracture path (composed of dotted black segments) traversing across fibers. The black arrows indicate shear forces inducing Mode III fracture. b, Bamboo fracture modeling with stress field propagation between fibers. Points P<sub>1</sub> , P<sub>2</sub> , and P<sub>3</sub>  represent left fracture height on consecutive fibers f<sub>i-1</sub> , f<sub>i</sub>  and f<sub>i+1</sub> , with angles θ<sub>i-1</sub>  and θ<sub>i</sub> showing fracture directions of fibers f<sub>i-1</sub>  and f<sub>i</sub>. Blue dotted circles illustrate the stress field emanating from point P<sub>2</sub> , determining the probability distribution of potential fracture paths.
 </em>
 </p>
 
