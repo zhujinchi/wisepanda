@@ -5,12 +5,13 @@ from typing import Dict, List
 
 import cv2
 import numpy as np
-from PyQt6.QtCore import Qt, pyqtSignal, QRectF, QTimer
-from PyQt6.QtGui import QPainter, QPixmap, QImage, QIcon
+from PyQt6.QtCore import Qt, pyqtSignal, QRectF, QTimer, QRect
+from PyQt6.QtGui import QPainter, QPixmap, QImage, QIcon, QPen
 from PyQt6.QtWidgets import QLabel, QHBoxLayout, QGroupBox, QCheckBox, QVBoxLayout, QLineEdit, QGraphicsView, \
-    QGraphicsScene, QGraphicsPixmapItem, QGraphicsItem, QFrame, QPushButton, QApplication
+    QGraphicsScene, QGraphicsPixmapItem, QGraphicsItem, QFrame, QPushButton, QApplication, QDialog, QMessageBox, \
+    QScrollArea, QSizePolicy
 from qfluentwidgets import (CardWidget, StrongBodyLabel,
-                            PushButton, InfoBar, InfoBarPosition, PrimaryPushButton)
+                            PushButton, InfoBar, InfoBarPosition, PrimaryPushButton, Dialog)
 
 from PyQt6.QtWidgets import QWidget, QLabel
 
@@ -528,6 +529,7 @@ class ImageInfoPanel(QFrame):
         self.topPartTitleLabel = StrongBodyLabel(self.tr('上半缀区'))
         self.topPartTitleLabel.setStyleSheet("border-left: 0px solid rgb(29, 29, 29);")
         self.top_button = PushButton(self.tr("缀区修改"), self)
+        self.top_button.clicked.connect(lambda: self.open_slice_dialog("top"))
         # self.top_button.clicked.connect(lambda: self.getResultList("top"))
         top_horizontal_layout = QHBoxLayout()
         top_horizontal_layout.addWidget(self.topPartTitleLabel)
@@ -545,12 +547,11 @@ class ImageInfoPanel(QFrame):
         # 下半缀区组件
         self.bottomPartTitleLabel = StrongBodyLabel(self.tr('下半缀区'))
         self.bottom_button = PushButton(self.tr("缀区修改"), self)
-        # self.bottom_button.clicked.connect(lambda: self.getResultList("bottom"))
+        self.bottom_button.clicked.connect(lambda: self.open_slice_dialog("bottom"))
         bottom_horizontal_layout = QHBoxLayout()
         bottom_horizontal_layout.addWidget(self.bottomPartTitleLabel)
         bottom_horizontal_layout.addSpacing(10)
         bottom_horizontal_layout.addWidget(self.line2_widget)
-        # bottom_horizontal_layout.addSpacing(0)
         bottom_horizontal_layout.addWidget(self.bottom_button)
 
         # 创建一个容器 QWidget，并将水平布局设置为其布局
@@ -579,6 +580,78 @@ class ImageInfoPanel(QFrame):
 
         self.imageInfoLabel.setObjectName('imageInfoLabel')
 
+    def open_slice_dialog(self, direction):
+        if not os.path.exists(self.choose_img):
+            QMessageBox.warning(self, "错误", f"图像文件不存在：{self.choose_img}")
+            return
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("手动标注缀区")
+
+        editor = ImageSliceEditor(self.choose_img)
+        save_btn = QPushButton("保存")
+        cancel_btn = QPushButton("取消")
+
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(save_btn)
+        button_layout.addWidget(cancel_btn)
+
+        layout = QVBoxLayout(dialog)
+        layout.addWidget(editor)
+        layout.addLayout(button_layout)
+
+        def on_confirm():
+            slice_coords = editor.get_slice()
+            if slice_coords:
+                self.save_slice_to_db(self.choose_img, direction, slice_coords[0], slice_coords[1])
+                QMessageBox.information(self, "保存成功", "已保存标注数据")
+                dialog.accept()
+            else:
+                QMessageBox.warning(self, "无效操作", "请先框选图像区域后再保存")
+
+        save_btn.clicked.connect(on_confirm)
+        cancel_btn.clicked.connect(dialog.reject)
+
+        dialog.exec()
+        self.setImage(self.choose_img)
+
+    def save_slice_to_db(self, image_path, direction, start_row, end_row):
+        import os
+        image_path = os.path.normpath(image_path).replace("\\", "/")
+        conn = sqlite3.connect("annotations.db")
+        cursor = conn.cursor()
+
+        # 先查该图片是否已存在记录
+        cursor.execute('SELECT id FROM notch_info WHERE image_path=?', (image_path,))
+        row = cursor.fetchone()
+
+        if row is None:
+            # 不存在，插入新行，另一个方向字段设为NULL
+            if direction == "top":
+                cursor.execute('''
+                    INSERT INTO notch_info (image_path, top_start, top_end)
+                    VALUES (?, ?, ?)
+                ''', (image_path, start_row, end_row))
+            else:  # bottom
+                cursor.execute('''
+                    INSERT INTO notch_info (image_path, bottom_start, bottom_end)
+                    VALUES (?, ?, ?)
+                ''', (image_path, start_row, end_row))
+        else:
+            # 存在，更新对应字段
+            if direction == "top":
+                cursor.execute('''
+                    UPDATE notch_info SET top_start=?, top_end=? WHERE image_path=?
+                ''', (start_row, end_row, image_path))
+            else:
+                cursor.execute('''
+                    UPDATE notch_info SET bottom_start=?, bottom_end=? WHERE image_path=?
+                ''', (start_row, end_row, image_path))
+
+        conn.commit()
+        conn.close()
+        # self.setImage(self.choose_img)
 
     def setImage(self, img_dir):
         try:
@@ -588,8 +661,9 @@ class ImageInfoPanel(QFrame):
             # self.img_changer._instance.set_dir(img_dir)
 
             self.choose_img = img_dir
+            image_path = os.path.normpath(img_dir).replace("\\", "/")
 
-            notch_extractor = NotchExtractor(img_dir)
+            notch_extractor = NotchExtractor(image_path)
             self.top, self.bottom = notch_extractor.extract_top(), notch_extractor.extract_bottom()
             crop_size_top = (64, int((self.top.shape[0] * 64) / self.top.shape[1]))
             crop_size_bottom = (64, int((self.bottom.shape[0] * 64) / self.bottom.shape[1]))
@@ -694,3 +768,97 @@ class AnnotationDatabase:
                 '释文': row[5] if row[5] else ''
             }
         return {}
+
+
+
+class ImageLabelWithRect(QLabel):
+    def __init__(self, pixmap: QPixmap, parent=None):
+        super().__init__(parent)
+        self.setPixmap(pixmap)
+        self.start_pos = None
+        self.end_pos = None
+        self.selection_rect = QRect()
+        self.selection_done = False  # 新增，是否已完成选区
+        self.setMouseTracking(True)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            # 如果之前完成了选区，重新点击可以重新开始
+            if self.selection_done:
+                self.selection_done = False
+                self.selection_rect = QRect()
+            self.start_pos = event.pos()
+            self.end_pos = self.start_pos
+            self.update()
+
+    def mouseMoveEvent(self, event):
+        # 只有未完成选区时才更新
+        if not self.selection_done and self.start_pos:
+            self.end_pos = event.pos()
+            self.update()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and not self.selection_done:
+            self.end_pos = event.pos()
+            self.selection_rect = QRect(self.start_pos, self.end_pos).normalized()
+            self.selection_done = True  # 标记完成
+            self.update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if self.selection_rect.isValid():
+            painter = QPainter(self)
+            pen = QPen(Qt.GlobalColor.red, 2, Qt.PenStyle.DashLine)
+            painter.setPen(pen)
+            painter.drawRect(self.selection_rect)
+
+    def get_slice(self):
+        if self.selection_rect.isValid():
+            return self.selection_rect.top(), self.selection_rect.bottom()
+        return None
+
+
+class ImageSliceEditor(QWidget):
+    def __init__(self, image_path, parent=None):
+        super().__init__(parent)
+        self.image_path = os.path.abspath(image_path)
+        self.cv_image = cv2.imread(self.image_path)
+
+        if self.cv_image is None:
+            raise ValueError(f"图像加载失败，路径无效：{self.image_path}")
+
+        self.qimage = self._cv2qimage(self.cv_image)
+        self.pixmap = QPixmap.fromImage(self.qimage)
+
+        self.image_label = ImageLabelWithRect(self.pixmap)
+        self.image_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+        # ✅ 使用滚动区域以防图像太大
+        scroll_area = QScrollArea()
+        scroll_area.setWidget(self.image_label)
+        scroll_area.setWidgetResizable(False)
+        scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(scroll_area)
+        self.setLayout(layout)
+
+        # ✅ 设置合理的最大窗口尺寸（例如占屏幕 80%）
+        screen = self.screen().availableGeometry()
+        max_width = int(screen.width())
+        max_height = int(screen.height())
+        self.resize(min(self.pixmap.width(), max_width),
+                    min(self.pixmap.height(), max_height))
+
+        self.setWindowTitle(f"图像截取 - {os.path.basename(self.image_path)}")
+
+    def _cv2qimage(self, image):
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        h, w, ch = rgb_image.shape
+        bytes_per_line = ch * w
+        return QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
+
+    def get_slice(self):
+        return self.image_label.get_slice()
+

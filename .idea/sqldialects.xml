@@ -2,6 +2,7 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/app/common/matchdb.py" dialect="SQLite" />
+    <file url="file://$PROJECT_DIR$/app/common/notch_extractor.py" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/app/view/folder_interface.py" dialect="SQLite" />
     <file url="file://$PROJECT_DIR$/app/view/label_interface.py" dialect="SQLite" />
     <file url="file://$PROJECT_DIR$/app/view/list_interface.py" dialect="GenericSQL" />
