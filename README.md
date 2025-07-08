@@ -46,8 +46,8 @@ While manual fragment rejoining is prohibitively time-consuming - the very probl
 
 ```
 # Create and activate conda environment
-conda create -n fratcher python=3.11
-conda activate fratcher
+conda create -n wisepanda python=3.11
+conda activate wisepanda
 
 # Install requirements
 pip install -r requirements.txt
@@ -56,7 +56,7 @@ pip install -r requirements.txt
 pip install "PyQt6-Fluent-Widgets[full]" -i https://pypi.org/simple/
 ```
 
-### 2.Launch Fratcher
+### 2.Launch WisePanda
 
 ```
 python demo.py
