@@ -62,6 +62,9 @@ pip install "PyQt6-Fluent-Widgets[full]" -i https://pypi.org/simple/
 python demo.py
 ```
 
+### 3.Load sample test data
+
+Note that in the **Import Project** on the main page, you need to manually select the **/test_data** folder.
 
 ## Use Examples
 <p align="center">
