@@ -42,7 +42,7 @@ While manual fragment rejoining is prohibitively time-consuming - the very probl
 
 ## Quik Start Guide
 
-### 1.Installation
+### 1. Installation
 
 ```
 # Create and activate conda environment
@@ -56,13 +56,13 @@ pip install -r requirements.txt
 pip install "PyQt6-Fluent-Widgets[full]" -i https://pypi.org/simple/
 ```
 
-### 2.Launch WisePanda
+### 2. Launch WisePanda
 
 ```
 python demo.py
 ```
 
-### 3.Load sample test data
+### 3. Load sample test data
 
 Note that in the **Import Project** on the main page, you need to manually select the **/test_data** folder.
 
