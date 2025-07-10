@@ -76,7 +76,7 @@ Note that in the **Import Project** on the main page, you need to manually selec
 
 
 ## Algorithm Code
-The core algorithm implementations and related code referenced by this project can be found within the algorithm/ directory. Please refer to the source files in that location for specific details on the algorithms used.
+The core algorithm implementations and related code referenced by this project can be found within the **algorithm/** directory. Please refer to the source files in that location for specific details on the algorithms used.
 
 ## License
 Our code is licensed under the Apache 2.0 license.
