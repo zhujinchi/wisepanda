@@ -37,7 +37,6 @@ class Config(QConfig):
     modelFolder = ConfigItem(
         "Folders", "Model", "app/model", FolderValidator())
 
-
     # main window
     dpiScale = OptionsConfigItem(
         "MainWindow", "DpiScale", "Auto", OptionsValidator([1, 1.25, 1.5, 1.75, 2, "Auto"]), restart=True)
