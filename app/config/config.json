@@ -7,9 +7,9 @@
     },
     "Folders": {
         "Download": "D:/try/test_data",
-        "Model": "D:/Users/angzeng/Desktop/Fratcher 3",
+        "Model": "app/model",
         "Slips": [
-            "D:/try/test_data"
+            "test_data"
         ]
     },
     "MainWindow": {
