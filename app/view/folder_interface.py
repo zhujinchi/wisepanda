@@ -44,6 +44,8 @@ class FolderInterface(ScrollArea):
         self.singleton_instance = Singleton_dir()
         self.img_data_instance = Singleton_imgData_list()
 
+        self.app_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
         # 竹帛计算model
         app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.vector_model = torch.load(os.path.join(app_path, 'model/model_of_best'), weights_only=False)
@@ -58,11 +60,16 @@ class FolderInterface(ScrollArea):
             parent=self.slipInThisPCGroup
         )
         # self.slipFolderCard.setFixedSize(360,360)
+
+        # 获取项目相对路径
+        absolute_project_path = cfg.get(cfg.downloadFolder)
+        relative_project_path = os.path.relpath(absolute_project_path, self.app_root)
+
         self.downloadFolderCard = PushSettingCard(
             self.tr('选择项目'),
             FIF.DICTIONARY_ADD,
             self.tr("导入项目"),
-            cfg.get(cfg.downloadFolder),
+            relative_project_path,
             self.slipInThisPCGroup
         )
         # self.downloadFolderCard.setFixedSize(360,200)
