@@ -818,40 +818,106 @@ class ImageLabelWithRect(QLabel):
         return None
 
 
+def rotate_image(image, angle):
+    """任意角度旋转，保持中心、扩展尺寸"""
+    (h, w) = image.shape[:2]
+    center = (w / 2, h / 2)
+
+    matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+    cos = abs(matrix[0, 0])
+    sin = abs(matrix[0, 1])
+
+    # 计算旋转后图像边界
+    new_w = int((h * sin) + (w * cos))
+    new_h = int((h * cos) + (w * sin))
+
+    # 调整变换矩阵平移
+    matrix[0, 2] += (new_w / 2) - center[0]
+    matrix[1, 2] += (new_h / 2) - center[1]
+
+    return cv2.warpAffine(image, matrix, (new_w, new_h))
+
+
 class ImageSliceEditor(QWidget):
     def __init__(self, image_path, parent=None):
         super().__init__(parent)
         self.image_path = os.path.abspath(image_path)
-        self.cv_image = cv2.imread(self.image_path)
+        self.original_image = cv2.imread(self.image_path)
 
-        if self.cv_image is None:
+        if self.original_image is None:
             raise ValueError(f"图像加载失败，路径无效：{self.image_path}")
 
-        self.qimage = self._cv2qimage(self.cv_image)
-        self.pixmap = QPixmap.fromImage(self.qimage)
+        self.current_image = self.original_image.copy()
 
+        # 初始化UI
+        self._init_ui()
+
+    def _init_ui(self):
+        # 图像显示
+        self.qimage = self._cv2qimage(self.current_image)
+        self.pixmap = QPixmap.fromImage(self.qimage)
         self.image_label = ImageLabelWithRect(self.pixmap)
         self.image_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
-        # ✅ 使用滚动区域以防图像太大
-        scroll_area = QScrollArea()
-        scroll_area.setWidget(self.image_label)
-        scroll_area.setWidgetResizable(False)
-        scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidget(self.image_label)
+        self.scroll_area.setWidgetResizable(False)
+        self.scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        # 旋转控件
+        self.angle_input = QLineEdit("0")
+        self.angle_input.setPlaceholderText("输入角度")
+        self.angle_input.setFixedWidth(60)
+        self.rotate_btn = QPushButton("旋转")
+        self.rotate_btn.clicked.connect(self.rotate_by_angle)
+
+        rotate_layout = QHBoxLayout()
+        rotate_layout.addStretch()
+        rotate_layout.addWidget(QLabel("角度："))
+        rotate_layout.addWidget(self.angle_input)
+        rotate_layout.addWidget(self.rotate_btn)
+        rotate_layout.addStretch()
+
+        # 主布局
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(scroll_area)
+        layout.addWidget(self.scroll_area)
+        layout.addLayout(rotate_layout)
         self.setLayout(layout)
 
-        # ✅ 设置合理的最大窗口尺寸（例如占屏幕 80%）
+        # 设置最大窗口尺寸
         screen = self.screen().availableGeometry()
-        max_width = int(screen.width())
-        max_height = int(screen.height())
+        max_width = int(screen.width() * 0.8)
+        max_height = int(screen.height() * 0.8)
         self.resize(min(self.pixmap.width(), max_width),
-                    min(self.pixmap.height(), max_height))
+                    min(self.pixmap.height(), max_height) + 60)
 
         self.setWindowTitle(f"图像截取 - {os.path.basename(self.image_path)}")
+
+    def rotate_by_angle(self):
+        try:
+            angle = float(self.angle_input.text())
+        except ValueError:
+            return  # 非法输入直接忽略
+
+        rotated_image = rotate_image(self.current_image, angle)
+        self.current_image = rotated_image
+        self.update_display()
+
+    def update_display(self):
+        self.qimage = self._cv2qimage(self.current_image)
+        self.pixmap = QPixmap.fromImage(self.qimage)
+
+        # 替换 image_label
+        new_label = ImageLabelWithRect(self.pixmap)
+        new_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.scroll_area.takeWidget()
+        self.scroll_area.setWidget(new_label)
+
+        self.image_label.deleteLater()
+        self.image_label = new_label
+
+        self.resize(self.pixmap.width(), self.pixmap.height() + 60)
 
     def _cv2qimage(self, image):
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
