@@ -64,9 +64,10 @@ class LabelWidget(CardWidget):
             self.createCheckRow("材质", ["竹", "木", "帛", "纸", "石", "楬", "检", "刺", "束", "券", "其他"]))
         self.right_layout.addWidget(self.createCheckRow("形制", ["简", "两行", "牍", "觚", "札", "封泥", "其他"]))
         self.right_layout.addWidget(self.createCheckRow("内容", ["质日", "日书", "书籍", "文书", "律令", "其他"]))
-        self.right_layout.addWidget(self.createCheckRow("正倒", ["不存在可能", "存在可能"]))
+        self.right_layout.addWidget(self.createCheckRow("墨迹",["上方有墨迹","下方有墨迹","左侧有墨迹","右侧有墨迹", "没有墨迹"]))
         self.right_layout.addWidget(
             self.createCheckRow("特殊信息", ["墨点", "刻痕", "涂墨", "图画", "习字", "火烧", "刮削", "其他"]))
+
 
         transcription_edit = QLineEdit()
         transcription_edit.setPlaceholderText("请输入释文")
@@ -244,7 +245,16 @@ class LabelWidget(CardWidget):
 
         img_dir = self.dirs[self.currentIndex]
         self.db.save_annotation(img_dir, result)
-        print(result)
+        # print(result)
+        InfoBar.success(
+            title='',
+            content=self.tr("保存成功"),
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.BOTTOM_RIGHT,
+            duration=3000,
+            parent=self
+        )
         return result
 
     def createRow(self, title: str, widgets: list[QWidget]) -> QGroupBox:
@@ -705,7 +715,7 @@ class AnnotationDatabase:
                 材质 TEXT,
                 形制 TEXT,
                 内容 TEXT,
-                正倒 TEXT,
+                墨迹 TEXT,
                 特殊信息 TEXT,
                 释文 TEXT
             )
@@ -719,13 +729,13 @@ class AnnotationDatabase:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO annotations (image_path, 材质, 形制, 内容, 正倒, 特殊信息,释文)
+                INSERT INTO annotations (image_path, 材质, 形制, 内容, 墨迹, 特殊信息,释文)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(image_path) DO UPDATE SET
                     材质=excluded.材质,
                     形制=excluded.形制,
                     内容=excluded.内容,
-                    正倒=excluded.正倒,
+                    墨迹=excluded.墨迹,
                     特殊信息=excluded.特殊信息,
                     释文=excluded.释文
             ''', (
@@ -733,7 +743,7 @@ class AnnotationDatabase:
                 ','.join(data.get('材质', [])),
                 ','.join(data.get('形制', [])),
                 ','.join(data.get('内容', [])),
-                ','.join(data.get('正倒', [])),
+                ','.join(data.get('墨迹', [])),
                 ','.join(data.get('特殊信息', [])),
                 data.get('释文', '').strip() if isinstance(data.get('释文'), str) else ''
             ))
@@ -749,7 +759,7 @@ class AnnotationDatabase:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT 材质, 形制, 内容, 正倒, 特殊信息, 释文
+            SELECT 材质, 形制, 内容, 墨迹, 特殊信息, 释文
             FROM annotations
             WHERE image_path = ?
             ORDER BY id DESC
@@ -763,7 +773,7 @@ class AnnotationDatabase:
                 '材质': row[0].split(',') if row[0] else [],
                 '形制': row[1].split(',') if row[1] else [],
                 '内容': row[2].split(',') if row[2] else [],
-                '正倒': row[3].split(',') if row[3] else [],
+                '墨迹': row[3].split(',') if row[3] else [],
                 '特殊信息': row[4].split(',') if row[4] else [],
                 '释文': row[5] if row[5] else ''
             }

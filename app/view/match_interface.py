@@ -1,10 +1,12 @@
 # coding:utf-8
+import os
+import sqlite3
 import sys
 import time
 from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve, QDateTime, QRectF
 from PyQt6.QtWidgets import QScrollArea, QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, \
     QWidget, QSlider, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy, QFrame, QGraphicsOpacityEffect, \
-    QGraphicsPixmapItem, QGraphicsView, QGraphicsScene, QGraphicsItem
+    QGraphicsPixmapItem, QGraphicsView, QGraphicsScene, QGraphicsItem, QComboBox
 from PyQt6.QtGui import QPixmap, QImage, QBitmap, QColor, QWheelEvent, QPainter, QKeyEvent
 from adodbapi.ado_consts import directions
 from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, SingleDirectionScrollArea, SmoothScrollArea, \
@@ -35,7 +37,9 @@ class MatchInterface(GalleryInterface):
 class ImageWidget(CardWidget):
     def __init__(self):
         super().__init__()
+        self.filter = None
         self.matchdb = MatchDB()
+        self.conn = sqlite3.connect('annotations.db')
         self.current_index = None
         self.initUI()
 
@@ -209,6 +213,10 @@ class ImageWidget(CardWidget):
         self.output_button.setFixedWidth(180)
         self.output_button.clicked.connect(self.outputList)
 
+        self.filterCombo = QComboBox()
+        self.filterCombo.addItems(["没有墨迹", "上方有墨迹", "下方有墨迹"])
+        self.filterCombo.currentIndexChanged.connect(self.applyFilter)
+
         # 创建分隔线
         self.line1_widget = CardWidget(self)
         self.line1_widget.setFixedHeight(1)
@@ -241,6 +249,7 @@ class ImageWidget(CardWidget):
         self.control_layout.addWidget(self.line2_widget)
         self.control_layout.addWidget(self.output_button, 0, Qt.AlignmentFlag.AlignHCenter)
         self.control_layout.addStretch(1)
+        self.control_layout.addWidget(self.filterCombo, 0, Qt.AlignmentFlag.AlignHCenter)
 
         self.control_widget.setLayout(self.control_layout)
 
@@ -290,8 +299,10 @@ class ImageWidget(CardWidget):
         # 设置 item2 的新位置
         self.pixmap_item2.setPos(new_x2, new_y2)
 
+
     # 更新result_list的方法
     def updateResultList(self, img_list):
+        self.img_list = img_list
         # 清除现有子widget
         for i in reversed(range(self.result_layout.count())):
             widget = self.result_layout.itemAt(i).widget()
@@ -307,10 +318,70 @@ class ImageWidget(CardWidget):
             self.index_to_path[i] = path
 
             child_widget = SampleCard(image_score_path[1], f'score: {image_score_path[0]}', i, self)
+
             child_widget.clicked.connect(lambda idx=i: self.chooseImage2(idx))
             self.result_layout.addWidget(child_widget)
 
         # 更新布局
+        self.result_layout.update()
+
+    # 更新 filter
+    def applyFilter(self):
+        filter_type = self.filterCombo.currentText()
+
+        # 清除现有子widget
+        for i in reversed(range(self.result_layout.count())):
+            widget = self.result_layout.itemAt(i).widget()
+            if widget:
+                widget.deleteLater()
+
+        # 创建新的子widget
+        for i, image_score_path in enumerate(self.img_list):
+            path = image_score_path[1]
+            self.path_to_index[path] = i
+            self.index_to_path[i] = path
+
+            child_widget = SampleCard(image_score_path[1], f'score: {image_score_path[0]}', i, self)
+            child_widget.clicked.connect(lambda idx=i: self.chooseImage2(idx))
+
+
+            if not hasattr(self, 'conn') or self.conn is None:
+                raise ValueError("数据库连接不存在。")
+
+            try:
+                cursor = self.conn.execute('''
+                    SELECT 墨迹 FROM annotations
+                    WHERE image_path = ?
+                ''', (path,))
+                result = cursor.fetchone()
+                # print(f"图像 {os.path.basename(path)} 墨迹字段: {result}")
+
+                if result is None or not result[0]:  # 无记录或字段为空
+                    if filter_type == "全部" or filter_type == "没有墨迹":
+                        self.result_layout.addWidget(child_widget)
+                    continue
+
+                moji = result[0]
+
+                if filter_type == "没有墨迹":
+                    if "没有" in moji:
+                        self.result_layout.addWidget(child_widget)
+
+                elif filter_type == "下方有墨迹":
+                    if "下方" in moji:
+                        self.result_layout.addWidget(child_widget)
+
+                elif filter_type == "上方有墨迹":
+                    if "上方" in moji:
+                        self.result_layout.addWidget(child_widget)
+
+                elif filter_type == "全部":
+                    self.result_layout.addWidget(child_widget)
+
+            except Exception as db_err:
+                print(f"[数据库错误] 图像路径: {path}")
+                print(f"错误详情: {db_err}")
+
         self.result_layout.update()
 
     def showPrev(self):
