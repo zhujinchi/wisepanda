@@ -90,7 +90,7 @@ class MainWindow(FluentWindow):
     def onSupport(self):
         w = MessageBox(
             '注意事项',
-            '本项目仅限学习交流，禁止商用。\n联系作者：jiachen.shen@whu.edu.cn;\tAngzeng@iCloud.com',
+            '本项目仅限学习交流，禁止商用。\n联系作者：jiachen.shen@whu.edu.cn;\tjinchi.zhu@whu.edu.cn',
             self
         )
         w.width = 300
