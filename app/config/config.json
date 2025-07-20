@@ -14,7 +14,7 @@
     },
     "MainWindow": {
         "DpiScale": "Auto",
-        "Language": "zh_HK"
+        "Language": "zh_CN"
     },
     "QFluentWidgets": {
         "ThemeColor": "#ff009faa",

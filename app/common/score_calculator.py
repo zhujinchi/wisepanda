@@ -4,6 +4,7 @@ import cv2
 import torch
 
 from .notch_extractor import NotchExtractor
+TOPK=100
 
 
 class ScoreCalculator:
@@ -33,10 +34,10 @@ class ScoreCalculator:
 
             scores_bottom_edge.sort(key=lambda x: x[0], reverse=True)
 
-            if len(scores_bottom_edge) > 50:
-                return scores_bottom_edge[:50]
-            else:
-                return scores_bottom_edge
+            # if len(scores_bottom_edge) > 100:
+            #     return scores_bottom_edge[:100]
+            # else:
+            return scores_bottom_edge[:TOPK]
 
         else:
             #源片是上半截区的
@@ -56,7 +57,7 @@ class ScoreCalculator:
 
             scores_top_edge.sort(key=lambda x: x[0], reverse=True)
 
-            return scores_top_edge[:50]
+            return scores_top_edge[:TOPK]
 
     @staticmethod
     def _get_edge(src_image, direction):

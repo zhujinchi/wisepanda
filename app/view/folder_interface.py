@@ -24,6 +24,7 @@ from ..common.matchdb import MatchDB
 from ..common.style_sheet import StyleSheet
 from ..common.singleton_dir import Singleton_dir
 
+TOPK=100
 
 class FolderInterface(ScrollArea):
     """ Folder interface """
@@ -373,10 +374,11 @@ class FolderInterface(ScrollArea):
         top_temp_list.sort(key=lambda x: x[0], reverse=True)
         bottom_temp_list.sort(key=lambda x: x[0], reverse=True)
 
-        if len(filedir_list) > 50:
-            return top_temp_list[:50], bottom_temp_list[:50]
-        else:
-            return top_temp_list, bottom_temp_list
+        # if len(filedir_list) > 50:
+        #     return top_temp_list[:50], bottom_temp_list[:50]
+        # else:
+        #     return top_temp_list, bottom_temp_list
+        return top_temp_list[:TOPK], bottom_temp_list[:TOPK]
 
     def getImgList(self, dirs, ext=['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tif']):
         fileList = []

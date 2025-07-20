@@ -3,6 +3,8 @@ import os
 import sqlite3
 import sys
 import time
+from operator import truediv
+
 from PyQt6.QtCore import Qt, QPoint, QCoreApplication, pyqtSignal, QEasingCurve, QDateTime, QRectF
 from PyQt6.QtWidgets import QScrollArea, QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, \
     QWidget, QSlider, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy, QFrame, QGraphicsOpacityEffect, \
@@ -602,13 +604,18 @@ class SampleCard(QFrame):
     def __init__(self, icon, content, index, parent=None):
         super().__init__(parent=parent)
 
+        self.isSelected = False
         self.index = index
         self.title = self.tr("排名：")+f'{index+1}'
         self.icon = icon
 
+
         self.iconWidget = IconWidget(icon, self)
         self.titleLabel = QLabel(self.title, self)
         self.contentLabel = QLabel(TextWrap.wrap(content, 45, False)[0], self)
+        path = icon.replace('\\', '/')
+        relative_path = path.split('test_data/')[-1]
+        self.iconLabel = QLabel(relative_path, self)
 
         self.hBoxLayout = QHBoxLayout(self)
         self.vBoxLayout = QVBoxLayout()
@@ -629,24 +636,39 @@ class SampleCard(QFrame):
         self.vBoxLayout.addStretch(1)
         self.vBoxLayout.addWidget(self.titleLabel)
         self.vBoxLayout.addWidget(self.contentLabel)
+        cheat = True
+        if cheat:
+            self.vBoxLayout.addWidget(self.iconLabel)
         self.vBoxLayout.addStretch(1)
 
         self.titleLabel.setObjectName('titleLabel')
         self.contentLabel.setObjectName('contentLabel')
 
         self.setStyleSheet('''
-            SampleCard {
-                background-color: white;
-                border-radius: 8px;
-            }
-            SampleCard:hover {
-                background-color: #E6F7FF;
-            }
-        ''')
+                    SampleCard {
+                        background-color: white;
+                        border-radius: 8px;
+                    }
+                    SampleCard:hover {
+                        background-color: #E6F7FF;
+                    }
+                    SampleCard[isSelected="true"] {
+                        border: 2px solid #1890FF;
+                        background-color: #F0F8FF;
+                    }
+                ''')
 
     def mouseReleaseEvent(self, e):
         super().mouseReleaseEvent(e)
+        self.setSelected(True)
         self.clicked.emit()
+
+    def setSelected(self, isSelected: bool, force=False):
+        if self.isSelected == isSelected and not force:
+            return
+        self.isSelected = isSelected
+        self.setProperty('isSelected', isSelected)
+        self.setStyle(QApplication.style())
 
 class ZoomableGraphicsView(QGraphicsView):
     wheelScrolled = pyqtSignal(bool)
