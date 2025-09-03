@@ -17,7 +17,7 @@ class FractureCurveGenerator:
 
     def p(self, theta_i, x):
         '''Description: This function is used to calculate the probability density function'''
-        return self.K_Ⅲ*math.cos(x/2)/math.sqrt(2*math.pi*(self.len_x/math.cos(theta_i+x)))
+        return self.K_Ⅲ*math.cos(x/2)/(math.sqrt(2*math.pi)*(self.len_x*math.cos(theta_i+x)))
 
     def angle_from_pdf(self, theta_i):
         '''Description: This function is used to generate the angle from the probability density function'''
