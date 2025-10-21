@@ -15,28 +15,35 @@ crossover_rate = 0.8  # Crossover rate
 mutation_rate = 0.01  # Mutation rate
 generations = 10  # Number of generations
 param_ranges = [
-    (1, 200),  # Length of fiber arrangement in bamboo slips, determining the number of angles to simulate
-    (0, 1),  # Range of parameter 2
-    (1, 10),  # Fiber length
-    (0.001, 0.1),   # combined corrosion
-    (100, 1000),  # Years of corrosion
+    (1, 200),
+    (0, 1),
+    (1, 10),
+    (0.001, 0.1),
+    (100, 1000),
 ]
 
-# Fitness function
+
 def fitness_function(params):
-    # This is a hypothetical fitness calculation, should be replaced with the actual calculation method in practical application
-    
+    """
+    Description: This function is used to calculate the fitness of the parameters
+    params: list of parameters
+    """
+
     generator = FractureCurveGenerator(int(params[0]), 1, int(params[2]), int(params[3]), int(params[4]))
     vectors = generator.get_fracture_curves(118)
-    score = abs(0.100-get_silhouette_score(vectors))
+    score = abs(0.100 - get_silhouette_score(vectors))
     print(params, score)
-    return 1-score
+    return 1 - score
 
-# Calculate the similarity of two data distributions
+
 def get_silhouette_score(fake_list):
+    """
+    Description: This function is used to calculate the silhouette score between fake and real datasets
+    fake_list: generated fracture curves
+    """
     fake_vectors = fake_list
-    fake_vectors_data_bottom= fake_vectors[:, 3:4, :].astype(np.float32)
-    fake_vectors_data_top= fake_vectors[:, 2:3, :].astype(np.float32)
+    fake_vectors_data_bottom = fake_vectors[:, 3:4, :].astype(np.float32)
+    fake_vectors_data_top = fake_vectors[:, 2:3, :].astype(np.float32)
     fake_list_top = []
     fake_list_bottom = []
     for i in range(118):
@@ -47,7 +54,7 @@ def get_silhouette_score(fake_list):
     real_vectors_data_bottom = real_vectors[:, 3:4, :].astype(np.float32)
     real_vectors_data_top = real_vectors[:, 2:3, :].astype(np.float32)
     real_list_top = []
-    real_list_bottom = []   
+    real_list_bottom = []
     for i in range(118):
         real_list_top.append(real_vectors_data_top[i][0])
         real_list_bottom.append(real_vectors_data_bottom[i][0])
@@ -63,53 +70,76 @@ def get_silhouette_score(fake_list):
 
     # Example label array
     # Assume the first 118 points are from the fake dataset, the next 118 points are from the real dataset
-    labels = np.array([0]*118 + [1]*118)
+    labels = np.array([0] * 118 + [1] * 118)
 
     # Calculate silhouette score
     silhouette_avg_top = silhouette_score(data_transformed_top, labels)
     silhouette_avg_bottom = silhouette_score(data_transformed_bottom, labels)
-    silhouette_avg = (silhouette_avg_top + silhouette_avg_bottom) / 2  
+    silhouette_avg = (silhouette_avg_top + silhouette_avg_bottom) / 2
 
     return silhouette_avg
 
 
-# Fitness calculation, considering parameter ranges
 def fitness(individual):
+    """
+    Description: This function is used to calculate the fitness of the individual
+    individual: list of genes representing the individual
+    """
     params_scaled = [
-        param_ranges[i][0] + (int("".join(str(bit) for bit in individual[i*genes_per_param:(i+1)*genes_per_param]), 2) / (2**genes_per_param - 1)) * (param_ranges[i][1] - param_ranges[i][0])
+        param_ranges[i][0]
+        + (
+            int("".join(str(bit) for bit in individual[i * genes_per_param : (i + 1) * genes_per_param]), 2)
+            / (2**genes_per_param - 1)
+        )
+        * (param_ranges[i][1] - param_ranges[i][0])
         for i in range(num_params)
     ]
     return fitness_function(params_scaled)
 
-# Selection function
+
 def select(population, fitness_scores):
+    """
+    Description: This function is used to select individuals based on their fitness scores
+    population: current population of individuals
+    fitness_scores: fitness scores of the individuals
+    """
     probabilities = fitness_scores / fitness_scores.sum()
     selected_indices = np.random.choice(range(population_size), size=population_size, replace=True, p=probabilities)
     return population[selected_indices]
 
-# Crossover function
+
 def crossover(parent1, parent2):
+    """
+    Description: This function is used to perform crossover between two parents
+    parent1: first parent individual
+    parent2: second parent individual
+    """
     if np.random.rand() < crossover_rate:
-        point = np.random.randint(1, total_genes-1)
+        point = np.random.randint(1, total_genes - 1)
         offspring1 = np.concatenate((parent1[:point], parent2[point:]))
         offspring2 = np.concatenate((parent2[:point], parent1[point:]))
         return offspring1, offspring2
     else:
         return parent1, parent2
 
-# Mutation function
+
 def mutate(individual):
+    """
+    Description: This function is used to mutate an individual
+    individual: individual to be mutated
+    """
     for i in range(total_genes):
         if np.random.rand() < mutation_rate:
             individual[i] = 1 - individual[i]
     return individual
+
 
 if __name__ == "__main__":
 
     # Initialize population
     np.random.seed(42)
     population = np.random.randint(2, size=(population_size, total_genes))
-    
+
     # Main loop
     best_fitness_history = []
     with ProcessPoolExecutor() as executor:
@@ -117,14 +147,14 @@ if __name__ == "__main__":
             # Calculate fitness in parallel
             fitness_scores = list(executor.map(fitness, population))
             fitness_scores = np.array(fitness_scores)
-            
+
             best_fitness_history.append(fitness_scores.max())
-            
+
             # Selection, crossover, and mutation processes remain unchanged
             selected = select(population, fitness_scores)
             offspring = []
             for i in range(0, population_size, 2):
-                parent1, parent2 = selected[i], selected[i+1]
+                parent1, parent2 = selected[i], selected[i + 1]
                 child1, child2 = crossover(parent1, parent2)
                 child1 = mutate(child1)
                 child2 = mutate(child2)
@@ -136,9 +166,15 @@ if __name__ == "__main__":
     best_index = np.argmax(fitness_scores)
     best_individual = population[best_index]
     best_params = [
-        param_ranges[i][0] + (int("".join(str(bit) for bit in best_individual[i*genes_per_param:(i+1)*genes_per_param]), 2) / (2**genes_per_param - 1)) * (param_ranges[i][1] - param_ranges[i][0])
+        param_ranges[i][0]
+        + (
+            int("".join(str(bit) for bit in best_individual[i * genes_per_param : (i + 1) * genes_per_param]), 2)
+            / (2**genes_per_param - 1)
+        )
+        * (param_ranges[i][1] - param_ranges[i][0])
         for i in range(num_params)
     ]
     best_fitness = fitness(best_individual)
 
-    best_fitness, best_params
+    print("Best Fitness:", best_fitness)
+    print("Best Parameters:", best_params)

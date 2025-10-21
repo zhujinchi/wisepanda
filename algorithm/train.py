@@ -15,9 +15,16 @@ from dataset import VectorDataset
 from utils import get_top_k_accuracy, get_tsne_plots, load_training_data
 from generator import FractureCurveGenerator
 
+
 # set environment
 def set_env(deterministic, seed, allow_tf32_on_cudnn, allow_tf32_on_matmul):
-    '''Description: This function is used to set the environment for the model'''
+    """
+    Description: This function is used to set the environment for training
+    deterministic: whether to set deterministic
+    seed: random seed
+    allow_tf32_on_cudnn: whether to allow tf32 on cudnn
+    allow_tf32_on_matmul: whether to allow tf32 on matmul
+    """
     # set deterministic
     if deterministic:
         cudnn.benchmark = False
@@ -38,15 +45,38 @@ def set_env(deterministic, seed, allow_tf32_on_cudnn, allow_tf32_on_matmul):
     # The flag below controls whether to allow TF32 on cuDNN. This flag defaults to True.
     torch.backends.cudnn.allow_tf32 = allow_tf32_on_cudnn
 
+
 # loss function
 def loss_fn(dis_pos, dis_neg):
-    '''Description: This function is used to calculate the loss function'''
+    """
+    Description: This function is used to calculate the loss
+    dis_pos: distance of positive pair
+    dis_neg: distance of negative pair
+    """
     loss = torch.mean((dis_pos - 0) ** 2) + torch.mean((dis_neg - 1) ** 2)
     return loss
 
-# train function    
-def train(f_model, c_model, dataloader, max_epoch=100, lr=3e-3, f_model_path='models/f_model.pth', c_model_path='models/c_model.pth'):
-    '''Description: This function is used to train the model'''
+
+# train function
+def train(
+    f_model,
+    c_model,
+    dataloader,
+    max_epoch=100,
+    lr=3e-3,
+    f_model_path="models/f_model.pth",
+    c_model_path="models/c_model.pth",
+):
+    """
+    Description: This function is used to train the model
+    f_model: feature extraction model
+    c_model: comparison model
+    dataloader: dataloader for training
+    max_epoch: maximum number of epochs
+    lr: learning rate
+    f_model_path: path to save the feature extraction model
+    c_model_path: path to save the comparison model
+    """
     f_model.train()
     c_model.train()
     params = list(f_model.parameters()) + list(c_model.parameters())
@@ -97,6 +127,7 @@ def train(f_model, c_model, dataloader, max_epoch=100, lr=3e-3, f_model_path='mo
     torch.save(f_model.state_dict(), f_model_path)
     torch.save(c_model.state_dict(), c_model_path)
 
+
 # main function
 if __name__ == "__main__":
     # set environment
@@ -110,7 +141,7 @@ if __name__ == "__main__":
 
     # extract the 3rd and 4th channels for training and testing
     total_size = len(vectors)
-    vectors_train = vectors[0:int(total_size/2), 2:4, :].astype(np.float32)
+    vectors_train = vectors[0 : int(total_size / 2), 2:4, :].astype(np.float32)
 
     # create dataloader
     dataset_train = VectorDataset(vectors_train)
@@ -121,7 +152,15 @@ if __name__ == "__main__":
     c_model = CompareNet()
 
     # train models
-    train(f_model, c_model, dataloader, max_epoch=150, lr=1e-3, f_model_path='models/f_model.pth', c_model_path='models/c_model.pth')
+    train(
+        f_model,
+        c_model,
+        dataloader,
+        max_epoch=150,
+        lr=1e-3,
+        f_model_path="models/f_model.pth",
+        c_model_path="models/c_model.pth",
+    )
 
     # Calculate Top-k accuracy on real-world datasets
     # Note: Complete validation results and baseline comparisons are available in method_comparison.ipynb
@@ -130,5 +169,5 @@ if __name__ == "__main__":
     for i in k_list:
         k = get_top_k_accuracy(i, f_model, c_model, real_world_data, "longitudinal")
         k_ = get_top_k_accuracy(i, f_model, c_model, real_world_data, "transverse")
-        result_list.append(round((k+k_)/236, 4))
+        result_list.append(round((k + k_) / 236, 4))
     print(result_list)

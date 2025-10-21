@@ -1,9 +1,7 @@
-# Custom dataset for training the Network
 import numpy as np
 from torch.utils.data import Dataset
 
 
-# Custom dataset for training the Network
 class VectorDataset(Dataset):
     """Description: This class is used to create a custom dataset for the model"""
 
