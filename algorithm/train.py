@@ -2,27 +2,18 @@
 import os
 import random
 from pathlib import Path
-
 import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-import plotly.io as pio
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 from torch.optim.lr_scheduler import OneCycleLR
 from torch.utils.data import DataLoader, Dataset
-import matplotlib.pyplot as plt
-
 import torch.nn.functional as F
 
 from model import CompareNet, VectorNet
 from dataset import VectorDataset
-from utils import get_heat_map, get_top_k_accuracy, inference, get_tsne_plots, calculate_position_stats_numpy, load_training_data
+from utils import get_top_k_accuracy, get_tsne_plots, load_training_data
 from generator import FractureCurveGenerator
-
-pio.renderers.default = "browser"
 
 # set environment
 def set_env(deterministic, seed, allow_tf32_on_cudnn, allow_tf32_on_matmul):
@@ -54,7 +45,7 @@ def loss_fn(dis_pos, dis_neg):
     return loss
 
 # train function    
-def train(f_model, c_model, dataloader, max_epoch=10, lr=3e-3, f_model_path='models/f_model.pth', c_model_path='models/c_model.pth'):
+def train(f_model, c_model, dataloader, max_epoch=100, lr=3e-3, f_model_path='models/f_model.pth', c_model_path='models/c_model.pth'):
     '''Description: This function is used to train the model'''
     f_model.train()
     c_model.train()

@@ -1,5 +1,7 @@
 # This file contains some useful functions for the project.
+import os
 import numpy as np
+import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
@@ -10,7 +12,6 @@ from sklearn.manifold import TSNE
 from matplotlib.gridspec import GridSpec
 from matplotlib.colors import LinearSegmentedColormap
 from generator import FractureCurveGenerator
-
 from scipy import optimize
 
 def load_training_data(path, new_data=False):
@@ -33,6 +34,42 @@ def inference(f_model, c_model, vector_1, vector_2):
     feature_2 = f_model(vector_2)
     dis = c_model(torch.stack((feature_1, feature_2), 1))
     return dis
+
+def get_top_k_accuracy(k, f_model, c_model, str, direction):
+    '''Description: This function is used to calculate the top k accuracy of the model'''
+    # calculate the top k accuracy
+    top_k = 0
+    dis_map = get_heat_map(f_model, c_model, str, 118, False)
+    length = len(dis_map)
+    gather_list_transverse = []
+    for i in range(length):
+        dis_list = []
+        if direction == "longitudinal":
+           dis_list = [x[i] for x in dis_map]
+        else: 
+            dis_list = dis_map[i].copy()
+        dis_list.sort()
+        top_index = dis_list.index(dis_map[i][i])
+        gather_list_transverse.append(top_index+1)
+
+    for j in gather_list_transverse:
+        if j <= k:
+            top_k += 1
+    
+    return top_k
+
+def calculate_position_stats_numpy(list1, list2, list3):
+    # transform to numpy array
+    arrays = np.array([list1, list2, list3])
+    
+    # calculate mean and standard deviation
+    means = np.mean(arrays, axis=0)
+    stds = np.std(arrays, axis=0, ddof=1)  
+
+    means = np.round(means, 2)
+    stds = np.round(stds, 2)
+    
+    return means.tolist(), stds.tolist()
 
 def get_heat_map(f_model, c_model, str, length, isshow = False):
     '''Description: This function is used to calculate the heat map of the model'''
@@ -62,29 +99,6 @@ def get_heat_map(f_model, c_model, str, length, isshow = False):
 
     return dis_map
     
-def get_top_k_accuracy(k, f_model, c_model, str, direction):
-    '''Description: This function is used to calculate the top k accuracy of the model'''
-    # calculate the top k accuracy
-    top_k = 0
-    dis_map = get_heat_map(f_model, c_model, str, 118, False)
-    length = len(dis_map)
-    gather_list_transverse = []
-    for i in range(length):
-        dis_list = []
-        if direction == "longitudinal":
-           dis_list = [x[i] for x in dis_map]
-        else: 
-            dis_list = dis_map[i].copy()
-        dis_list.sort()
-        top_index = dis_list.index(dis_map[i][i])
-        gather_list_transverse.append(top_index+1)
-
-    for j in gather_list_transverse:
-        if j <= k:
-            top_k += 1
-    
-    return top_k
-
 def show_fiber_curve(bottom_fiber, top_fiber):
     '''Description: This function is used to show the fiber curve'''
 
@@ -243,16 +257,3 @@ def get_tsne_plots(fake_vectors, real_vectors, dis_map):
     plt.close()
     
     print("Charts and data have been saved to the 'outputs' directory")
-
-    def calculate_position_stats_numpy(list1, list2, list3):
-        # transform to numpy array
-        arrays = np.array([list1, list2, list3])
-        
-        # calculate mean and standard deviation
-        means = np.mean(arrays, axis=0)
-        stds = np.std(arrays, axis=0, ddof=1)  
-
-        means = np.round(means, 2)
-        stds = np.round(stds, 2)
-        
-        return means.tolist(), stds.tolist()
