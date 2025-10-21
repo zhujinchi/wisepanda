@@ -1,0 +1,4 @@
+type: 'yolov7'
+path: './yolov7.pth'
+classes: [0]
+min_box_height: 0.2

@@ -26,9 +26,35 @@ class VectorDataset(Dataset):
         pos_vector = pos_vector[np.newaxis, :]
         neg_vector = neg_vector[np.newaxis, :]
 
+
+        # max_val = vector.max()
+        # if max_val != 0:
+        #     vector /= max_val
+        # else:
+        #     pass 
+        # vector /= max_val
+
+        max_val = vector.max()
+        if max_val == 0:
+            vector += 1e-6 
+        else:
+            pass
         vector /= vector.max()
+
+        max_pos = pos_vector.max()
+        if max_pos == 0:
+            pos_vector += 1e-6
+        else:
+            pass
         pos_vector /= pos_vector.max()
+
+        max_neg = neg_vector.max()
+        if max_neg == 0:
+            neg_vector += 1e-6
+        else:
+            pass
         neg_vector /= neg_vector.max()
+    
         return vector, pos_vector, neg_vector
 
     def __len__(self):

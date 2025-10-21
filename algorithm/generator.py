@@ -150,5 +150,5 @@ class FractureCurveGenerator:
 
 # main function
 if __name__ == "__main__":
-    generator = FractureCurveGenerator(80, 1, 10, 0.01, 1000)
+    generator = FractureCurveGenerator(187, 1, 3, 0.02, 500)
     vectors = generator.get_fracture_curves(1000)

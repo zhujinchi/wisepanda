@@ -1,0 +1,23 @@
+{
+    "Material": {
+        "AcrylicBlurRadius": 8
+    },
+    "Update": {
+        "CheckUpdateAtStartUp": true
+    },
+    "Folders": {
+        "Download": "/Users/angzeng/GitHub/wisepanda/test_data",
+        "Model": "/Users/angzeng/GitHub/wisepanda/D:/try/Fratcher/app/model",
+        "Slips": [
+            "/Users/angzeng/GitHub/wisepanda/D:/try/Fratcher/test_data"
+        ]
+    },
+    "MainWindow": {
+        "DpiScale": "Auto",
+        "Language": "zh_HK"
+    },
+    "QFluentWidgets": {
+        "ThemeColor": "#ff009faa",
+        "ThemeMode": "Light"
+    }
+}
