@@ -1,6 +1,0 @@
-base_cfg: './config/base.yaml'
-det_cfg: './config/det.yaml'
-decoder_cfg:
-  first_recog:
-  - './ckpts/Stage1_Slips_Only_v11_KMeans_img_256_entorphy_sum_lambda05_1/train_cfg.yaml'
-  - './ckpts/Stage1_Slips_Only_v11_KMeans_img_256_entorphy_sum_lambda05_1/saved_model/best.pt'

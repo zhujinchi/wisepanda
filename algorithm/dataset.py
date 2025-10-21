@@ -26,14 +26,6 @@ class VectorDataset(Dataset):
         pos_vector = pos_vector[np.newaxis, :]
         neg_vector = neg_vector[np.newaxis, :]
 
-
-        # max_val = vector.max()
-        # if max_val != 0:
-        #     vector /= max_val
-        # else:
-        #     pass 
-        # vector /= max_val
-
         max_val = vector.max()
         if max_val == 0:
             vector += 1e-6 
