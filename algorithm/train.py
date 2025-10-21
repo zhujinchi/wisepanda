@@ -51,8 +51,8 @@ def train(f_model, c_model, dataloader, max_epoch=100, lr=3e-3, f_model_path='mo
     c_model.train()
     params = list(f_model.parameters()) + list(c_model.parameters())
 
+    # create optimizer and scheduler
     optimizer = torch.optim.Adam(params, lr=lr)
-
     scheduler_onecycle = OneCycleLR(
         optimizer,
         max_lr=lr,
@@ -61,6 +61,7 @@ def train(f_model, c_model, dataloader, max_epoch=100, lr=3e-3, f_model_path='mo
         pct_start=0.1,
     )
 
+    # training loop
     for epoch in range(max_epoch):
         for batch_idx, (vector, pos_vector, neg_vector) in enumerate(dataloader):
             vector = vector
@@ -92,7 +93,7 @@ def train(f_model, c_model, dataloader, max_epoch=100, lr=3e-3, f_model_path='mo
                         loss.item(),
                     )
                 )
-         # Save the models
+    # Save the models
     torch.save(f_model.state_dict(), f_model_path)
     torch.save(c_model.state_dict(), c_model_path)
 

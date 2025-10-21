@@ -2,9 +2,11 @@
 import numpy as np
 from torch.utils.data import Dataset
 
+
 # Custom dataset for training the Network
 class VectorDataset(Dataset):
-    '''Description: This class is used to define the VectorDataset'''
+    """Description: This class is used to create a custom dataset for the model"""
+
     def __init__(self, vectors):
         super().__init__()
         # assume vectors is n x 2 x 64
@@ -26,9 +28,10 @@ class VectorDataset(Dataset):
         pos_vector = pos_vector[np.newaxis, :]
         neg_vector = neg_vector[np.newaxis, :]
 
+        # normalize to 0-1
         max_val = vector.max()
         if max_val == 0:
-            vector += 1e-6 
+            vector += 1e-6
         else:
             pass
         vector /= vector.max()
@@ -46,7 +49,8 @@ class VectorDataset(Dataset):
         else:
             pass
         neg_vector /= neg_vector.max()
-    
+
+        # return tensor
         return vector, pos_vector, neg_vector
 
     def __len__(self):
