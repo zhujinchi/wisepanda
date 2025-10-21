@@ -1,4 +1,4 @@
-# WisePanda training and validation
+# Wisepanda training and validation
 
 Install dependencies:
 ```sh
