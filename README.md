@@ -8,7 +8,7 @@ Bamboo slips, serving as a fundamental medium for documenting ancient East Asian
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
 <img alt="Restoration of damaged inscription" src="images/Fig1.png" width="75%" /><br />
-<em>The challenge of bamboo slip rejoining in archaeological research: with thousands of Qin dynasty fragments arranged in spirals, each potentially matching any other.</em>
+<em>The challenge of bamboo slip rejoining in archaeological research: with thousands of fragments arranged in spirals, each potentially matching any other.</em>
 </p>
 
 Compared to the leading curve matching method, WisePanda increases Top-50 matching accuracy from 36% to 52%. Archaeologists using WisePanda have experienced substantial efficiency improvements (20 times faster) when rejoining fragmented bamboo slips,demonstrating the powerful impact of this collaborative research tool. Based on the physics of fracture and material deterioration, WisePanda automatically generates synthetic training data that captures the physical properties of bamboo fragmentations. This approach enables the training of a matching network without requiring manually paired samples, providing ranked suggestions to facilitate the rejoining process. This work demonstrates how models like WisePanda can enhance collaboration between AI and historians, fundamentally transforming how we study and interpret the rich and complex history of China.
