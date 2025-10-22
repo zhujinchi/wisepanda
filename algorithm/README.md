@@ -17,7 +17,7 @@ Parameter optimization module using genetic algorithms to calibrate the physical
 ## model
 Neural network architecture definitions:
 - `VectorNet` (Feature Encoder): Extracts geometric embeddings from fracture curve vectors.
-- `CompareNet` (Distance Metric Network): Computes learnable pairwise similarity scores from feature embeddings.
+- `CompareNet` (Distance Metric Network): Computes learnable pairwise similarity scores from feature embeddings.  
 The weights of the trained model are saved in `models`.
 
 ## train
