@@ -1,4 +1,4 @@
-## Ongoing Work for Hybrid Fracture Handling
+# Ongoing Work for Hybrid Fracture Handling
 
 Bamboo slips exhibit transverse (Sample 1) and longitudinal fractures (Sample 2). Handling bamboo slip fragments with different fracture types presents a significant challenge in archaeological restoration. 
 
@@ -7,7 +7,7 @@ Bamboo slips exhibit transverse (Sample 1) and longitudinal fractures (Sample 2)
 <em>Transverse and longitudinal fractures.</em>
 </p>
 
-### Hierarchical Two-Pool Workflow
+## Hierarchical Two-Pool Workflow
 
 It is difficult to design a unified algorithm that effectively handles both transverse and longitudinal fractures due to their fundamentally different characteristics. To address this, we have designed a hierarchical workflow that processes these two fracture types systematically.The workflow establishes two processing loops: a longitudinal matching pool and a transverse matching pool. Fragments are initially classified based on their horizontal completeness. The key insight is that longitudinally fractured fragments, once successfully matched and achieving horizontal completeness, are transferred from the longitudinal pool into the transverse pool for further vertical assembly. This sequential processing ensures systematic progression from partial fragments to complete slips.
 
@@ -16,7 +16,7 @@ It is difficult to design a unified algorithm that effectively handles both tran
 <em>Two-pool workflow</em>
 </p>
 
-### An example
+## An example
 
 The figure shows an example assembly using four fragments. Longitudinal fragments A and B first match to achieve horizontal completeness (Step 1), then the combined A+B unit progressively matches with transverse fragments C and D (Steps 2-3) to form a complete slip.
 
