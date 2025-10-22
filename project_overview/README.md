@@ -12,7 +12,7 @@ Bamboo slips exhibit transverse (Sample 1) and longitudinal fractures (Sample 2)
 It is difficult to design a unified algorithm that effectively handles both transverse and longitudinal fractures due to their fundamentally different characteristics. To address this, we have designed a hierarchical workflow that processes these two fracture types systematically.The workflow establishes two processing loops: a longitudinal matching pool and a transverse matching pool. Fragments are initially classified based on their horizontal completeness. The key insight is that longitudinally fractured fragments, once successfully matched and achieving horizontal completeness, are transferred from the longitudinal pool into the transverse pool for further vertical assembly. This sequential processing ensures systematic progression from partial fragments to complete slips.
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
-<img alt="Restoration of damaged inscription" src="images/muti_rejoin_pipeline.png" width="55%" /><br />
+<img alt="Restoration of damaged inscription" src="images/muti_rejoin_pipeline.png" width="45%" /><br />
 <em>two-pool workflow.</em>
 </p>
 
