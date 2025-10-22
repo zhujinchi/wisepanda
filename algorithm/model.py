@@ -1,4 +1,3 @@
-# This file contains the model architecture for the VectorNet and CompareNet
 import torch.nn as nn
 import torch
 import math
