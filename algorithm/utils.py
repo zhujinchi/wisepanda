@@ -10,8 +10,8 @@ import math
 from sklearn.manifold import TSNE
 from matplotlib.gridspec import GridSpec
 from matplotlib.colors import LinearSegmentedColormap
-from generator import FractureCurveGenerator
 from scipy import optimize
+from generator import FractureCurveGenerator
 
 
 def load_training_data(path, new_data=False, parameter_list=[187, 1, 3, 0.02, 500]):
