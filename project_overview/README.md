@@ -25,7 +25,7 @@ The figure shows an example assembly using four fragments. Longitudinal fragment
 <em>example assembly demonstrating hybrid fracture pattern handling across longitudinal and transverse matching stages.</em>
 </p>
 
-## Three-Stage Pipeline for Longitudinal Matching (ongoing)
+## Three-Stage Pipeline for Longitudinal Matching (Ongoing)
 
 Our approach for longitudinal fractures employs a three-stage pipeline to address the 
 challenge of matching straight-edged breaks that split through characters.
