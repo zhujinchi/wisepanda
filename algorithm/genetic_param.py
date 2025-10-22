@@ -1,10 +1,10 @@
-from generator import FractureCurveGenerator
 import numpy as np
 from concurrent.futures import ProcessPoolExecutor
 from sklearn.manifold import TSNE
 from sklearn.metrics import silhouette_score
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
+from generator import FractureCurveGenerator
 
 # Define genetic algorithm parameters
 population_size = 10  # Population size
