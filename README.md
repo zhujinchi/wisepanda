@@ -46,6 +46,7 @@ While manual fragment rejoining is prohibitively time-consuming - the very probl
 
 ```
 # Create and activate conda environment
+cd software
 conda create -n wisepanda python=3.11
 conda activate wisepanda
 
