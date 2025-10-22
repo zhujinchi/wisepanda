@@ -4,7 +4,7 @@ Bamboo slips exhibit transverse (Sample 1) and longitudinal fractures (Sample 2)
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
 <img alt="Restoration of damaged inscription" src="images/two_types_fractures.png" width="45%" /><br />
-<em>transverse and longitudinal fractures.</em>
+<em>Transverse and longitudinal fractures.</em>
 </p>
 
 ### Hierarchical Two-Pool Workflow
@@ -13,16 +13,16 @@ It is difficult to design a unified algorithm that effectively handles both tran
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
 <img alt="Restoration of damaged inscription" src="images/muti_rejoin_pipeline.png" width="75%" /><br />
-<em>pipeline.</em>
+<em>Two-pool workflow</em>
 </p>
 
-### Example Workflow
+### An example
 
 The figure shows an example assembly using four fragments. Longitudinal fragments A and B first match to achieve horizontal completeness (Step 1), then the combined A+B unit progressively matches with transverse fragments C and D (Steps 2-3) to form a complete slip.
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
 <img alt="Restoration of damaged inscription" src="images/muti_rejoin_example.png" width="45%" /><br />
-<em>pipeline.</em>
+<em>Example assembly demonstrating hybrid fracture pattern handling across longitudinal and transverse matching stages.</em>
 </p>
 
 ## Three-Stage Pipeline for Longitudinal Matching (ongoing)
@@ -51,5 +51,5 @@ used for transverse fractures.
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
 <img alt="Restoration of damaged inscription" src="images/vit_bamboo_pipeline.png" width="75%" /><br />
-<em>pipeline.</em>
+<em>Three-stage pipeline for character-based longitudinal fracture matching.</em>
 </p>
