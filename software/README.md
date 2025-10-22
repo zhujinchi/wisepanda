@@ -1,4 +1,4 @@
-# Bamboo Slip Fragment Matcher
+# WisePanda: Bamboo Slip Fragment Matcher
 
 ## Overview
 
