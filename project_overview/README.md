@@ -3,7 +3,7 @@
 Bamboo slips exhibit transverse (Sample 1) and longitudinal fractures (Sample 2). Handling bamboo slip fragments with different fracture types presents a significant challenge in archaeological restoration. 
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
-<img alt="Restoration of damaged inscription" src="images/two_types_fractures.png" width="75%" /><br />
+<img alt="Restoration of damaged inscription" src="images/two_types_fractures.png" width="45%" /><br />
 <em>transverse and longitudinal fractures.</em>
 </p>
 
@@ -21,7 +21,7 @@ It is difficult to design a unified algorithm that effectively handles both tran
 The figure shows an example assembly using four fragments. Longitudinal fragments A and B first match to achieve horizontal completeness (Step 1), then the combined A+B unit progressively matches with transverse fragments C and D (Steps 2-3) to form a complete slip.
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
-<img alt="Restoration of damaged inscription" src="images/muti_rejoin_example.png" width="75%" /><br />
+<img alt="Restoration of damaged inscription" src="images/muti_rejoin_example.png" width="45%" /><br />
 <em>pipeline.</em>
 </p>
 
