@@ -1,4 +1,3 @@
-# This file contains some useful functions for the project.
 import os
 import numpy as np
 import pandas as pd
