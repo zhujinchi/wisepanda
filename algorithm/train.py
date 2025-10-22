@@ -1,4 +1,3 @@
-# Train the model and test the model
 import os
 import random
 from pathlib import Path
