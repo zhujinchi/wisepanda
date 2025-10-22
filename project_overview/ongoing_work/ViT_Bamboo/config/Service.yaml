@@ -1,0 +1,8 @@
+base_cfg: './config/base.yaml'
+det_cfg: './config/det.yaml'
+debug: True
+check_license_skip: True
+decoder_cfg:
+  signature:
+  - './ckpts/Stage_1/train_cfg.yaml'
+  - './ckpts/Stage_1/saved_model/best.pt'

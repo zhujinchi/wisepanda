@@ -1,0 +1,24 @@
+dino:
+  path: ./RefModel/vit_base_obj365_all_teacher_224.pth
+  decode_idx: 0
+  input_key: img_224
+  input_shape:
+    - 224
+    - 224
+  input_type: MAE
+vit:
+  path: ./RefModel/vit-b-16_224-224-fp32.pth
+  decode_idx: 1
+  input_key: img_224
+  input_shape:
+    - 224
+    - 224
+  input_type: MAE
+slips:
+  path: ./RefModel/vit-b-16_224-224-fp32.pth
+  decode_idx: 2
+  input_key: img_256
+  input_shape:
+    - 256
+    - 192
+  input_type: MAE

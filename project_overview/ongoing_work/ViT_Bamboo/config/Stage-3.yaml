@@ -1,0 +1,6 @@
+base_cfg: './config/base.yaml'
+det_cfg: './config/det.yaml'
+decoder_cfg:
+  second_recog:
+  - './ckpts/stage_2_dino_only_realimg_randomocclusion_4/train_cfg.yaml'
+  - './ckpts/stage_2_dino_only_realimg_randomocclusion_4/saved_model/best.pt'

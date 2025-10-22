@@ -1,0 +1,112 @@
+basemodel:
+  dino:
+    decode_idx: 0
+    input_key: img_224
+    model_path: ./RefModel/vit_base_obj365_all_teacher_224.pth
+    vit_output_shape:
+    - 768
+    - 14
+    - 14
+  vit:
+    decode_idx: 1
+    input_key: img_224
+    model_path: ./RefModel/vit-b-16_224-224-fp32.pth
+    vit_output_shape:
+    - 768
+    - 14
+    - 14
+data:
+  public_neg_extend: false
+  train:
+  - dataset_path: ./STAGEONEDATA/full_jiandu_pdf_train
+    images_path: ./STAGEONEDATA/full_jiandu_pdf_train/images_labels
+    label_remap:
+      pair: 0
+      unpair: 1
+    labels_path: ./STAGEONEDATA/full_jiandu_pdf_train/images_labels
+    list_file: Train.txt
+    obj_name: obj.names
+  transforms:
+    ColorJitter:
+      brightness: 0.5
+      contrast: 0
+      hue: 0
+      saturation: 0
+      turn_on: true
+    RandomAffine:
+      degrees: 10
+      scale:
+      - 0.9
+      - 1.1
+      shear: 10
+      translate:
+      - 0.1
+      - 0.0
+      turn_on: true
+    RandomEqualize:
+      prob: 0.1
+      turn_on: false
+    RandomGrayscale:
+      prob: 0.1
+      turn_on: false
+    RandomHorizontalFlip:
+      prob: 0.5
+      turn_on: true
+    gaussianblur:
+      g_bulr_kernel: 5
+      g_bulr_sigma:
+      - 0.1
+      - 2
+      turn_on: false
+  valid:
+  - dataset_path: ./STAGEONEDATA/full_jiandu_pdf_val
+    images_path: ./STAGEONEDATA/full_jiandu_pdf_val/images_labels
+    label_remap:
+      pair: 0
+      unpair: 1
+    labels_path: ./STAGEONEDATA/full_jiandu_pdf_val/images_labels
+    list_file: Val.txt
+    obj_name: obj.names
+entrophy_config:
+  lambda_value: 0.5
+gpu_ids: '2'
+loss: focal
+loss_params:
+  alpha:
+  - 0.5
+  - 0.5
+  gamma: 2
+  num_classes: 2
+middle_blur:
+  blur_radius: 5
+  enable: true
+  max_width: 30
+  min_width: 20
+model:
+  Block_params:
+    attn_drop: 0.0
+    dim: 256
+    drop_path: 0.1
+    init_values: null
+    mlp_ratio: 4.0
+    num_heads: 8
+    proj_drop: 0.0
+    qk_norm: true
+    qkv_bias: false
+  cls_num: 2
+  decoder_key: Slips_Only_v11
+  num_layers: 6
+optimizer:
+  lr: 0.001
+  lr_adjust:
+    decay_ep: 5
+    decay_val: 0.9
+    min_val: 0.0001
+  momentum: 0.9
+  type: adamw
+train_param:
+  epoch: 100
+  save_dir: ./ckpts/Stage1_Slips_Only_v11_KMeans_img_256_entorphy_sum_lambda05_1/
+  t_batch: 128
+  v_batch: 16
+version: 5
