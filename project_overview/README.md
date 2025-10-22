@@ -50,6 +50,6 @@ coherence rather than geometric features, complementing the physics-driven curve
 used for transverse fractures.
 
 <p align="center" style="margin-top:2em; margin-bottom:2em;" >
-<img alt="Restoration of damaged inscription" src="images/vit_bamboo_pipeline.png" width="75%" /><br />
+<img alt="Restoration of damaged inscription" src="images/vit_bamboo_pipeline.png" width="95%" /><br />
 <em>Three-stage pipeline for character-based longitudinal fracture matching.</em>
 </p>
