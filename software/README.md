@@ -1,4 +1,4 @@
-# Bamboo slips Fragment Matching Software
+# Bamboo Slip Fragment Matcher
 
 ## Overview
 
