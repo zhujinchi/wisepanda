@@ -40,7 +40,7 @@ While manual fragment rejoining is prohibitively time-consuming - the very probl
 - Combines physical principles with artificial intelligence
 - Intuitive GUI for selection, comparison, and verification integrated AI-assistant
 
-## Quik Start Guide
+## Quick Start Guide
 
 ### 1. Installation
 
