@@ -14,7 +14,7 @@ from scipy import optimize
 from generator import FractureCurveGenerator
 
 
-def load_training_data(path, new_data=False, parameter_list=[187, 1, 3, 0.02, 500]):
+def load_training_data(path, new_data=False, parameter_list=[426, 1, 3, 0.015, 500]):
     """
     Description: This function is used to load the training data
     path: path to the data
@@ -23,7 +23,7 @@ def load_training_data(path, new_data=False, parameter_list=[187, 1, 3, 0.02, 50
     """
     if new_data:
         # Physics engine generates data
-        # default parameters (187, 1, 3, 0.02, 500)
+        # default parameters (426, 1, 3, 0.015, 500)
         generator = FractureCurveGenerator(parameter_list)
         vectors = generator.get_fracture_curves(6000)
     else:
