@@ -133,7 +133,7 @@ if __name__ == "__main__":
     set_env(deterministic=True, seed=0, allow_tf32_on_cudnn=True, allow_tf32_on_matmul=True)
     # real world data (Bamboo236)
     real_world_data = "dataset/vector_real_118_patch.npy"
-    generated_data = "dataset/vector_reallike_6000.npy"
+    generated_data = "dataset/vector_reallike_6000n.npy"
 
     # The training data is loaded upon initialization. 
     # Setting the 'new_data' parameter to True enables the physics-based data generation process, which takes approximately 10 hours to complete.
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     # extract the 3rd and 4th channels for training and testing
     total_size = len(vectors)
-    vectors_train = vectors[0 : int(total_size / 2), 2:4, :].astype(np.float32)
+    vectors_train = vectors[ 0:int(total_size), 2:4, :].astype(np.float32)
 
     # create dataloader
     dataset_train = VectorDataset(vectors_train)
