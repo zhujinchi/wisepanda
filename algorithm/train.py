@@ -135,7 +135,8 @@ if __name__ == "__main__":
     real_world_data = "dataset/vector_real_118_patch.npy"
     generated_data = "dataset/vector_reallike_6000.npy"
 
-    # load training data
+    # The training data is loaded upon initialization. 
+    # Setting the 'new_data' parameter to True enables the physics-based data generation process, which takes approximately 10 hours to complete.
     vectors = load_training_data(generated_data, new_data=False)
 
     # extract the 3rd and 4th channels for training and testing
