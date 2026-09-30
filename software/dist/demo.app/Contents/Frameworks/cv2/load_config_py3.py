@@ -1,1 +1,0 @@
-../../Resources/cv2/load_config_py3.py
